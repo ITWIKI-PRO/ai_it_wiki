@@ -1,0 +1,29 @@
+﻿@using ai_it_wiki.Services.Kwork.Models
+@model List<Proposal>
+
+@if (Model == null || Model.Count == 0)
+{
+  <p>В базе пока еще нет предложений.</p>
+}
+else
+{
+  <table>
+    <thead>
+      <tr>
+        <th>Название</th>
+        <th>Описание</th>
+        <th>Цена</th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var proposal in Model)
+      {
+        <tr>
+          <td>@proposal.Title</td>
+          <td>@proposal.Description</td>
+          <td>@proposal.Price</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

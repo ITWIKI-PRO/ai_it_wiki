@@ -1,0 +1,123 @@
+﻿@page
+@using ai_it_wiki.Models
+
+<h2>Главная</h2>
+
+<h1>Загрузка аудиофайла для стенограммы</h1>
+<form id="uploadForm">
+  <input type="file" id="audioFile" name="audioFile" accept=".wav,.mp3,.ogg,.flac,.m4a" required />
+  <button type="submit">Отправить</button>
+</form>
+
+<div id="fileInfo"></div>
+<div id="timer"></div>
+<div id="result"></div>
+
+<style>
+  #result {
+    margin-top: 20px;
+    white-space: pre-wrap;
+    background: #f5f5f5;
+    padding: 10px;
+    border-radius: 5px;
+  }
+
+  #timer {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 10px;
+    color: #007bff;
+  }
+</style>
+
+<script>
+  const form = document.getElementById('uploadForm');
+  const resultDiv = document.getElementById('result');
+  const timerDiv = document.getElementById('timer');
+  const fileInfoDiv = document.getElementById('fileInfo');
+
+  let startTime, timerInterval;
+
+  form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const fileInput = document.getElementById('audioFile');
+      const file = fileInput.files[0];
+
+      if (!file) {
+          resultDiv.innerText = '❌ Выберите файл!';
+          return;
+      }
+
+      // Показываем размер файла
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      fileInfoDiv.innerText = `📂 Файл: ${file.name} | Размер: ${fileSizeMB} MB`;
+
+      // Получаем длительность, если файл это аудио
+      getAudioDuration(file).then(duration => {
+          if (duration) {
+              fileInfoDiv.innerText += ` | ⏱ Длительность: ${formatTime(duration)}`;
+          }
+      });
+
+      // Запускаем таймер
+      startTimer();
+
+      const formData = new FormData();
+      formData.append('audioFile', file);
+
+      try {
+          const response = await fetch('/api/transcript/upload', {
+              method: 'POST',
+              body: formData
+          });
+
+          
+
+          const result = await response.text();
+
+          stopTimer();
+
+          if (response.ok) {
+              resultDiv.innerText = '📄 Распознанный текст:\n\n' + result;
+          } else {
+              resultDiv.innerText = '❌ Ошибка: ' + (result.error || 'Неизвестная ошибка');
+          }
+      } catch (error) {
+          stopTimer();
+          resultDiv.innerText = '⚠️ Ошибка при отправке: ' + error;
+      }
+  });
+
+  function startTimer() {
+      startTime = Date.now();
+      timerDiv.innerText = '⏳ Обработка... 0 сек';
+      timerInterval = setInterval(() => {
+          const elapsed = Math.floor((Date.now() - startTime) / 1000);
+          timerDiv.innerText = `⏳ Обработка... ${elapsed} сек`;
+      }, 1000);
+  }
+
+  function stopTimer() {
+      clearInterval(timerInterval);
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      timerDiv.innerText = `✅ Готово! Время обработки: ${elapsed} сек`;
+  }
+
+  function formatTime(seconds) {
+      const min = Math.floor(seconds / 60);
+      const sec = Math.floor(seconds % 60);
+      return `${min}:${sec.toString().padStart(2, '0')}`;
+  }
+
+  function getAudioDuration(file) {
+      return new Promise((resolve) => {
+          const url = URL.createObjectURL(file);
+          const audio = new Audio(url);
+          audio.addEventListener('loadedmetadata', () => {
+              resolve(audio.duration);
+          });
+          audio.addEventListener('error', () => resolve(null));
+      });
+  }
+</script>

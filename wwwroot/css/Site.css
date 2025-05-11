@@ -1,0 +1,18 @@
+/*базовые стили для сайта */
+body {
+    font-family: 'Segoe UI', Tahoma, Arial, Verdana, sans-serif;
+    font-size: .813em;
+    margin: 0;
+    padding: 0;
+    color: #333;
+    background-color: #fff;
+}
+
+body, main {
+    height: 100%;
+}
+
+html {
+    height: 100vh;
+}
+

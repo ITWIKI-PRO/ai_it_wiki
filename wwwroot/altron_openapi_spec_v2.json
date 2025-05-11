@@ -1,0 +1,1118 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Altron API",
+    "description": "Work with files, note logs, web serfing, github and clients of Expedition. Before using methods for working with clients, you must run getClientSchema and fetchClientIdentifiers",
+    "version": "v1.4.3"
+  },
+  "servers": [
+    {
+      "url": "https://ai.it-wiki.site/api"
+    }
+  ],
+  "paths": {
+    "/CreateFile": {
+      "get": {
+        "operationId": "createFile",
+        "summary": "Creates a file and returns its name and URL.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "description": "Name of the file with extension to create",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "url": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/DeleteFiles": {
+      "get": {
+        "operationId": "deleteFiles",
+        "summary": "Delete multiple files",
+        "description": "Delete multiple files by their names.",
+        "parameters": [
+          {
+            "name": "names",
+            "in": "query",
+            "required": true,
+            "description": "The names of the files to delete",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "style": "form",
+              "explode": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Results of file deletion attempts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "isSuccess": {
+                        "type": "boolean"
+                      },
+                      "message": {
+                        "type": "string",
+                        "nullable": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/RenameFile": {
+      "get": {
+        "operationId": "renameFile",
+        "summary": "Rename a file",
+        "description": "Renames a file with the specified current name to a new name.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "description": "Current name of the file",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "newName",
+            "in": "query",
+            "required": true,
+            "description": "New name for the file",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File renamed successfully"
+          },
+          "400": {
+            "description": "Bad request, unable to rename file"
+          }
+        }
+      }
+    },
+    "/CopyFile": {
+      "get": {
+        "operationId": "copyFile",
+        "summary": "Copy a file",
+        "description": "Create a copy of file by path to path",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "description": "Name of the file to copy",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "newName",
+            "in": "query",
+            "required": true,
+            "description": "Name for the file copy",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File copied successfully"
+          },
+          "400": {
+            "description": "Bad request, unable to copy file"
+          }
+        }
+      }
+    },
+    "/ListFiles": {
+      "get": {
+        "operationId": "listFiles",
+        "summary": "Lists all files",
+        "description": "Retrieve a list of files.",
+        "responses": {
+          "200": {
+            "description": "A JSON array of file details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "FullName": {
+                        "type": "string"
+                      },
+                      "Length": {
+                        "type": "integer"
+                      },
+                      "CreationTime": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "LastAccessTime": {
+                        "type": "string",
+                        "format": "date-time"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ReadFile": {
+      "get": {
+        "operationId": "readFile",
+        "summary": "Read a specific file",
+        "description": "Retrieve the contents of a specified file. Supports partial content fetching.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "description": "The name of the file to read",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "part",
+            "in": "query",
+            "required": false,
+            "description": "The part of the file to read, if the content is split into parts",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contents of the file or a specific part of it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "is_consequential": {
+                      "type": "boolean"
+                    },
+                    "content": {
+                      "type": "string"
+                    },
+                    "part": {
+                      "type": "integer"
+                    },
+                    "total_parts": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request, when the requested part does not exist"
+          }
+        }
+      }
+    },
+    "/WriteFile": {
+      "post": {
+        "operationId": "writeFile",
+        "summary": "If 'InsertAfter' is default overwrites or creates a file with the specified content, else try to insert text after keywords",
+        "description": "If 'InsertAfter' overwrites the file with the specified content or creates a new file if it does not exist.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "description": "The name with extension of the file to write",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "Content": {
+                    "type": "string",
+                    "default": " "
+                  },
+                  "InsertAfter": {
+                    "type": "string",
+                    "default": " "
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "File written successfully"
+          },
+          "500": {
+            "description": "Error occurred during file writing"
+          }
+        }
+      }
+    },
+    "/ReplaceTextInFile": {
+      "post": {
+        "summary": "Replaces text in a file.",
+        "description": "Accepts the file path, text to search, and text to replace, performs the text replacement in the specified file.",
+        "operationId": "replaceTextInFile",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "filePath": {
+                    "type": "string",
+                    "description": "Path to the file for text replacement."
+                  },
+                  "searchText": {
+                    "type": "string",
+                    "description": "Text to be searched for."
+                  },
+                  "replaceText": {
+                    "type": "string",
+                    "description": "Text for replacing the found text."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful text replacement."
+          },
+          "400": {
+            "description": "Error in text replacement."
+          }
+        }
+      }
+    },
+    "/FilesUrl": {
+      "get": {
+        "operationId": "getFilesUrl",
+        "summary": "Get URLs for multiple files",
+        "description": "Retrieve the URLs for a list of files.",
+        "parameters": [
+          {
+            "name": "names",
+            "in": "query",
+            "required": true,
+            "description": "The names of the files to get the URLs for",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "style": "form",
+              "explode": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of file URLs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "url": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/MailTo": {
+      "post": {
+        "operationId": "mailTo",
+        "summary": "Send an email",
+        "description": "Sends an email to the specified recipient with the provided body content.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "To": {
+                    "type": "string",
+                    "description": "Recipient's email address"
+                  },
+                  "Body": {
+                    "type": "string",
+                    "description": "Email body content"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "IsSuccess": {
+                      "type": "boolean"
+                    },
+                    "StatusCode": {
+                      "type": "integer"
+                    },
+                    "Content": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error occurred during email sending"
+          }
+        }
+      }
+    },
+    "/SearchInGitHubFilesContent": {
+      "get": {
+        "operationId": "SearchInGitHubFilesContent",
+        "summary": "Searches within a GitHub repository files.",
+        "parameters": [
+          {
+            "name": "owner",
+            "in": "query",
+            "required": true,
+            "description": "The name of the repository owner.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "repos",
+            "in": "query",
+            "required": true,
+            "description": "The name of the repository.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "keywords",
+            "in": "query",
+            "required": true,
+            "description": "Keywords for searching within the repository separated by comma",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "part",
+            "in": "query",
+            "required": false,
+            "description": "Part number of the response to be returned.",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "description": "Optional path within the repository to refine the search.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results in JSON format.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResult"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No content, when owner or repository name is not provided."
+          }
+        }
+      }
+    },
+    "/UsingWebBrowser": {
+      "get": {
+        "operationId": "usingWebBrowser",
+        "summary": "Executes web browser actions based on the given request object.",
+        "description": "This endpoint performs web browser automation to navigate to a specified URL and retrieve content based on the provided parameters.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "url",
+            "required": true,
+            "description": "Target url",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "captureScreenshot",
+            "in": "query",
+            "required": false,
+            "description": "Whether to capture a screenshot of the web page",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "in": "query",
+            "name": "responseContentType",
+            "required": true,
+            "description": "The content type of the response (0 for HTML, 1 for Text).",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "regexPattern",
+            "required": false,
+            "description": "You can use regex for filtering server response",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "startIndex",
+            "required": false,
+            "description": "Start index of substring",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "in": "query",
+            "name": "length",
+            "required": false,
+            "description": "Length of substring",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "in": "query",
+            "name": "part",
+            "required": false,
+            "description": "The part number of the response to return, if the response is partitioned.",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully executed browser action and returned the response content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "is_consequential": {
+                      "type": "boolean"
+                    },
+                    "content": {
+                      "type": "string"
+                    },
+                    "part": {
+                      "type": "integer"
+                    },
+                    "total_parts": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request, such as when the requested part does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/FetchGitHubUserRepositories": {
+      "get": {
+        "summary": "Получить список публичных репозиториев пользователя GitHub. Для доступа к приватным репозиториям используйте метод 'FetchGitHubRepositoryContent'",
+        "description": "Этот метод возвращает список публичных репозиториев указанного пользователя GitHub. Для доступа к приватным репозиториям используйте метод 'FetchGitHubRepositoryContent'.",
+        "operationId": "FetchGitHubUserRepositories",
+        "parameters": [
+          {
+            "name": "owner",
+            "in": "query",
+            "description": "Имя владельца репозиториев",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/FetchGitHubRepositoryContent": {
+      "get": {
+        "summary": "Recieve github repository content",
+        "operationId": "FetchGitHubRepositoryContent",
+        "parameters": [
+          {
+            "name": "repos",
+            "in": "query",
+            "description": "Name of target repository",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "owner",
+            "in": "query",
+            "description": "Owner of repository, if value of that parameter is null name setted to pycekursk.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "description": "Path to target endpoint",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "part",
+            "required": false,
+            "description": "The part number of the response to return, if the response is partitioned.",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          }
+        ]
+      }
+    },
+    "/FetchGitHubRepositoryCommits": {
+      "get": {
+        "summary": "Recieve commits of target repository",
+        "operationId": "FetchGitHubRepositoryCommits",
+        "parameters": [
+          {
+            "name": "repos",
+            "in": "query",
+            "description": "Name of target repository",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "owner",
+            "in": "query",
+            "description": "Owner of repository, if value of that parameter is null name setted to pycekursk",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/GetGitHubCommitDetails": {
+      "get": {
+        "summary": "Recieve detailed information about a specific commit in a repository, if you don't have commitSha you should execute FetchGitHubRepositoryCommits before this method",
+        "operationId": "GetGitHubCommitDetails",
+        "parameters": [
+          {
+            "name": "part",
+            "in": "query",
+            "description": "Part number of the general answer. If the response was split into parts",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "owner",
+            "in": "query",
+            "description": "Owner of the repository",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "repos",
+            "in": "query",
+            "description": "Name of the target repository",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "commitSha",
+            "in": "query",
+            "description": "SHA of the commit to retrieve details for",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/FetchGitHubFileContent": {
+      "get": {
+        "summary": "Recieve content of file placed at repos",
+        "operationId": "FetchGitHubFileContent",
+        "parameters": [
+          {
+            "name": "repos",
+            "in": "query",
+            "description": "Name of target repository",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filePath",
+            "in": "query",
+            "description": "File path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "regionName",
+            "in": "query",
+            "description": "Name of region whith code",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "owner",
+            "in": "query",
+            "description": "Owner of repository, if value of that parameter is null name setted to pycekursk",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "part",
+            "required": false,
+            "description": "The part number of the response to return, if the response is partitioned.",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          }
+        ]
+      }
+    },
+    "/Notify": {
+      "get": {
+        "operationId": "notify",
+        "summary": "Send a notification message",
+        "description": "Send a notification message to user using api. Note that the message length is limited.",
+        "parameters": [
+          {
+            "name": "message",
+            "in": "query",
+            "required": true,
+            "description": "The message to send. Length is limited.",
+            "schema": {
+              "type": "string",
+              "maxLength": 256
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notification sent successfully"
+          },
+          "500": {
+            "description": "Problem encountered while sending the notification"
+          }
+        }
+      }
+    },
+    "/SendOpenAiResponseToTelegram": {
+      "post": {
+        "summary": "Send message with telegram api",
+        "operationId": "SendOpenAiResponseToTelegram",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "description": "The text of message you need to forward, for code snippets you should use markdown markup. If message length more then 4000 symbols you should split him on parts."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message sent successfully"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    }
+   
+  },
+  "components": {
+    "schemas": {
+      "WebBrowserActionRequestObject": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The URL to navigate to using the web browser."
+          }
+        }
+      },
+      "SearchResult": {
+        "type": "object",
+        "properties": {
+          "total_count": {
+            "type": "integer"
+          },
+          "incomplete_results": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchItem"
+            }
+          }
+        }
+      },
+      "SearchItem": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "repository": {
+            "$ref": "#/components/schemas/Repository"
+          }
+        }
+      },
+      "Repository": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "node_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "full_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "private": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "owner": {
+            "$ref": "#/components/schemas/Owner"
+          },
+          "html_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Owner": {
+        "type": "object",
+        "properties": {
+          "login": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "node_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "avatar_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "gravatar_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          },
+          "html_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "followers_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "following_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "gists_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "starred_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "subscriptions_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "organizations_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "repos_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "events_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "received_events_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "site_admin": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "ExtId": {
+            "type": "string",
+            "description": "External identifier of the user."
+          },
+          "FirstName": {
+            "type": "string",
+            "description": "First name of the user."
+          },
+          "LastName": {
+            "type": "string",
+            "description": "Last name of the user."
+          },
+          "Email": {
+            "type": "string",
+            "description": "Email address of the user."
+          },
+          "Phone": {
+            "type": "string",
+            "description": "Phone number of the user."
+          },
+          "About": {
+            "type": "string",
+            "description": "Information about the user."
+          },
+          "Job": {
+            "type": "string",
+            "description": "Job title of the user."
+          },
+          "ImageUrl": {
+            "type": "string",
+            "description": "URL of the user's image."
+          },
+          "Registered": {
+            "type": "boolean",
+            "description": "Indicates whether the user is registered."
+          }
+        }
+      },
+      "ClientInfoRequestObjects": {
+        "type": "object",
+        "properties": {
+          "ClientsInfo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClientInfoRequestObject"
+            }
+          }
+        }
+      },
+      "ClientInfoRequestObject": {
+        "type": "object",
+        "properties": {
+          "ExtId": {
+            "type": "string",
+            "description": "External identifier of the client"
+          },
+          "RequestedProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of requested client properties"
+          }
+        }
+      }
+    }
+  }
+}

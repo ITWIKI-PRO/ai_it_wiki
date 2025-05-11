@@ -1,0 +1,178 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenApiController API",
+    "version": "1.1.0"
+  },
+  "servers": [
+    {
+      "url": "https://ai.it-wiki.site/api"
+    }
+  ],
+  "paths": {
+    "/execute": {
+      "post": {
+        "summary": "Выполнение REST HTTP запроса",
+        "operationId": "executeRequest",
+        "requestBody": {
+          "description": "Модель запроса для выполнения HTTP запроса",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HttpRequestModel"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "part",
+            "in": "query",
+            "required": false,
+            "description": "The part of the file to read, if the content is split into parts",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResponseModel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Ошибка сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tgsend": {
+      "post": {
+        "summary": "Send message via telegrambot api",
+        "operationId": "SendMessageToTelegram",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "description": "The text of message you need to forward, for code snippets you should use markdown markup. If message length more then 4000 symbols you should split him on parts."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message sent successfully"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    }
+  },
+ 
+  "components": {
+    "schemas": {
+      "Order": {
+        "type": "object",
+        "properties": {
+          "OrderID": {
+            "type": "integer"
+          },
+          "OrderDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "CustomerName": {
+            "type": "string"
+          }
+        }
+      },
+      "HttpRequestModel": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "description": "Метод HTTP запроса (GET, POST, PUT, DELETE и т.д.)",
+            "example": "GET"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL для выполнения HTTP запроса",
+            "example": "https://example.com/api"
+          },
+          "body": {
+            "type": "string",
+            "description": "Тело запроса (для POST и PUT запросов)",
+            "nullable": true,
+            "example": "{\"key\":\"value\"}"
+          },
+          "headers": {
+            "type": "object",
+            "description": "Заголовки HTTP запроса",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "Authorization": "Bearer token",
+              "Content-Type": "application/json"
+            }
+          }
+        },
+        "required": [ "method", "url" ]
+      },
+      "HttpResponseModel": {
+        "type": "object",
+        "properties": {
+          "is_consequential": {
+            "type": "boolean"
+          },
+          "content": {
+            "type": "string"
+          },
+          "part": {
+            "type": "integer"
+          },
+          "total_parts": {
+            "type": "integer"
+          }
+        }
+      },
+      "ErrorModel": {
+        "type": "object",
+        "properties": {
+          "Error": {
+            "type": "string",
+            "description": "Сообщение об ошибке",
+            "example": "Request failed"
+          }
+        }
+      }
+    }
+  }
+}

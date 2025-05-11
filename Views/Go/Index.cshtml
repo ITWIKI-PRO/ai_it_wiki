@@ -1,0 +1,110 @@
+﻿
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+
+
+<link rel="stylesheet" type="text/css" href="~/js/wgo/wgo.player.css" />
+<link rel="stylesheet" type="text/css" href="~/js/wgo/wgo.player.dark.css" />
+<script type="text/javascript" src="~/js/wgo/wgo.min.js"></script>
+<script type="text/javascript" src="~/js/wgo/kifu.js"></script>
+<script type="text/javascript" src="~/js/wgo/sgfparser.js"></script>
+<script type="text/javascript" src="~/js/wgo/player.js"></script>
+<script type="text/javascript" src="~/js/wgo/basicplayer.js"></script>
+<script type="text/javascript" src="~/js/wgo/basicplayer.component.js"></script>
+<script type="text/javascript" src="~/js/wgo/basicplayer.infobox.js"></script>
+<script type="text/javascript" src="~/js/wgo/basicplayer.commentbox.js"></script>
+<script type="text/javascript" src="~/js/wgo/basicplayer.control.js"></script>
+<script type="text/javascript" src="~/js/wgo/player.editable.js"></script>
+<script type="text/javascript" src="~/js/wgo/scoremode.js"></script>
+<script type="text/javascript" src="~/js/wgo/player.permalink.js"></script>
+<style>
+  html {
+    background-color: black !important;
+  }
+
+  .wgo-player-board {
+    padding-top: 0 !important;
+  }
+
+  .wgo-player-top .wgo-player-wrapper, .wgo-player-bottom .wgo-player-wrapper {
+    max-width: 1159px !important;
+  }
+
+  #score > p {
+    color: white;
+  }
+
+  #debugout {
+    color: white;
+  }
+
+  .wgo-board {
+    opacity: 1;
+    transition: opacity 0.5s;
+  }
+
+    .wgo-board.loading {
+      opacity: 0.5;
+      user-select: none;
+      pointer-events: none;
+    }
+
+  #debugout {
+    font-size: 8pt;
+    color: grey;
+  }
+
+  input[type=button], input[type=text], input[type=email], input[type=password], select {
+    padding: 5px;
+    margin: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+
+</style>
+
+<h1 style="text-align: center;">ГО с ИИ</h1>
+
+<div style="display:flex;flex-direction:row;justify-content: center; align-items:center;">
+  <div>
+    <label for="sizeSelector">Размер доски:</label>
+    <select id="sizeSelector">
+      <option value="5">test</option>
+      <option value="9">9</option>
+      <option selected value="13">13</option>
+      <option value="19">19</option>
+    </select>
+  </div>
+  <div>
+    <input type="button" value="Новая игра" onclick="newGame()" />
+  </div>
+</div>
+
+<div id="go-board"></div>
+
+<div id="score">
+  <p id="blackScore"></p>
+  <p id="whiteScore"></p>
+</div>
+
+<div style="color: gray;font-style: italic;">
+  <div>
+    <input type="checkbox" id="aiTacticVisibility" />
+    <label for="aiTacticVisibility">Показать тактику ИИ</label>
+  </div>
+  <p hidden id="aiTactic"></p>
+</div>
+<div id="debugout"></div>
+<script src="~/js/go.js" asp-append-version="true"></script>
+<script>
+  window.addEventListener("beforeunload", function (event) {
+    var confirmationMessage = "Вы уверены, что хотите покинуть страницу? Состояние доски будет потеряно.";
+    (event || window.event).returnValue = confirmationMessage; // For IE and Firefox
+    return confirmationMessage; // For Safari
+  });
+  document.getElementById("aiTacticVisibility").addEventListener("change", function () {
+    document.getElementById("aiTactic").hidden = !this.checked;
+  });
+</script>
