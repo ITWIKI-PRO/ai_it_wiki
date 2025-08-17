@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using ai_it_wiki.Models;
 using ai_it_wiki.Services.OpenAI;
 using ai_it_wiki.Services.Ozon;
@@ -14,6 +15,20 @@ namespace ai_it_wiki.Controllers
   [ApiController]
   public class LLMOpenAPIController : ControllerBase
   {
+    [HttpPost("optimize-sku")]
+    public async Task<IActionResult> OptimizeSku([FromQuery] long sku)
+    {
+      var optimizer = new ProductRatingOptimizer(new OzonClientStub());
+      await optimizer.OptimizeSkuAsync(sku);
+      return Ok();
+      if (sku <= 0)
+      {
+        return BadRequest("SKU должен быть положительным числом.");
+      }
+      var optimizer = new ProductRatingOptimizer(new OzonClientStub());
+      await optimizer.OptimizeSkuAsync(sku);
+      return Ok();
+    }
     private readonly IOzonApiService _ozonApiService;
     private readonly IOpenAiService _openAiService;
     private readonly ILogger<LLMOpenAPIController> _logger;
