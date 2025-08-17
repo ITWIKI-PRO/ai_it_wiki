@@ -79,7 +79,18 @@ namespace ai_it_wiki.Services.Ozon
         private void SaveState()
         {
             var json = JsonSerializer.Serialize(_optimizedSkus);
-            File.WriteAllText(StateFile, json);
+            try
+            {
+                File.WriteAllText(StateFile, json);
+            }
+            catch (IOException ex)
+            {
+                // TODO: log the exception or handle it as needed
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                // TODO: log the exception or handle it as needed
+            }
         }
     }
 }
