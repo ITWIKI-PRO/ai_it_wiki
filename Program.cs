@@ -17,7 +17,7 @@ using Swashbuckle.AspNetCore.Filters;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.Annotations;
 using Telegram.Bot;
-using Microsoft.AspNetCore.OpenApi;
+
 using Microsoft.OpenApi;
 
 
@@ -38,7 +38,10 @@ OpenApiInfo openApiInfo = new OpenApiInfo
 builder.Services
     .AddRazorPages()
     .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
-
+//builder.Services.AddOpenApi("v1", (e) =>
+//{
+//  e.OpenApiVersion = OpenApiSpecVersion.OpenApi3_0;
+//});
 var services = new ServiceCollection();
 
 var mySqlConnectionString = builder.Configuration.GetConnectionString("context");
@@ -149,7 +152,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-
+app.UseDeveloperExceptionPage();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

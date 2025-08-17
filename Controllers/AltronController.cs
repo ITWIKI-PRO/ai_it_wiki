@@ -545,6 +545,68 @@ namespace it_wiki_site.Controllers
     #region ExecuteSqlQuery
 
     /// <summary>
+    /// Приоритетный метод выполнения произвольных SQL-запросов через GET-запрос (ограничение — короткий запрос).
+    /// </summary>
+    /// <param name="query">
+    /// Текст SQL-запроса, передаваемый в строке запроса.
+    /// </param>
+    /// <param name="connectionString">
+    /// Строка подключения к БД. Необязательно — если не указана, используется <c>DefaultAltronConnection</c>.
+    /// </param>
+    /// <returns>
+    /// Список строк, каждая — словарь «имя_столбца → значение».
+    /// </returns>
+    /// <response code="200">Успешный ответ. Тело: <see cref="SqlQueryResponse"/> с полем <c>Data</c>.</response>
+    /// <response code="400">Ошибка: отсутствует или слишком длинный SQL-запрос.</response>
+    /// <response code="500">Внутренняя ошибка сервера. Тело: <see cref="ErrorResponse"/>.</response>
+    [HttpGet]
+    [ProducesResponseType(typeof(SqlQueryResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> ExecuteShortSqlQuery([FromQuery][Required] string query, [FromQuery] string connectionString = null)
+    {
+      const int MAX_QUERY_LENGTH = 2000;
+
+      if (string.IsNullOrWhiteSpace(query))
+        return BadRequest(new ErrorResponse("SQL-запрос обязателен."));
+
+      if (query.Length > MAX_QUERY_LENGTH)
+        return BadRequest(new ErrorResponse($"Слишком длинный SQL-запрос. Максимум — {MAX_QUERY_LENGTH} символов."));
+
+      try
+      {
+        var connStr = string.IsNullOrEmpty(connectionString)
+          ? _configuration.GetConnectionString("DefaultAltronConnection")
+          : connectionString;
+
+        using var connection = new MySqlConnection(connStr);
+        await connection.OpenAsync();
+
+        using var command = new MySqlCommand(query, connection);
+        using var reader = await command.ExecuteReaderAsync();
+
+        var rows = new List<Dictionary<string, object>>();
+        while (await reader.ReadAsync())
+        {
+          var row = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+          for (int i = 0; i < reader.FieldCount; i++)
+            row[reader.GetName(i)] = reader.GetValue(i);
+          rows.Add(row);
+        }
+
+        var rowsJson = System.Text.Json.JsonSerializer.Serialize(rows);
+        return Ok(new SqlQueryResponse { Data = rowsJson });
+      }
+      catch (Exception ex)
+      {
+        _logger.LogError(ex, "Ошибка выполнения SQL через GET");
+        return StatusCode(500, new GenericSuccessResponse(ex.Message, false, nextRecommendedLLMActions: "SHOW TABLES"));
+      }
+    }
+
+
+
+    /// <summary>
     /// Выполняет произвольный SQL-запрос к базе данных и возвращает табличный результат.
     /// </summary>
     /// <param name="req">
@@ -599,6 +661,8 @@ namespace it_wiki_site.Controllers
         return StatusCode(500, new GenericSuccessResponse(ex.Message, false, nextRecommendedLLMActions: "SHOW TABLES"));
       }
     }
+
+   
 
     #endregion
 
