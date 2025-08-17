@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-    <PropertyGroup>
-        <TargetFrameworks>net8.0</TargetFrameworks>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <NoWarn>$(NoWarn);1591</NoWarn>
-    </PropertyGroup>
-
-    <ItemGroup>
-  <PackageReference Include="DevExtreme.AspNet.Data" Version="5.0.0" />
-    <PackageReference Include="DevExtreme.AspNet.Core" Version="24.2.7" />
+  <PropertyGroup>
+    <TargetFrameworks>net8.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include=".nuget\**\*" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Hangfire" Version="1.8.18" />
     <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
@@ -41,25 +41,30 @@
     <PackageReference Include="Tiktoken" Version="2.0.3" />
     <PackageReference Include="VideoLibrary" Version="3.2.8" />
     <PackageReference Include="Vosk" Version="0.3.38" />
-    </ItemGroup>
+  </ItemGroup>
 
-    <ItemGroup>
-      <None Include="wwwroot\samples\5716.txt" />
-    </ItemGroup>
+  <ItemGroup>
+    <None Include="wwwroot\samples\5716.txt" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Pages\Home\" />
-      <Folder Include="recipes\images\output\" />
-      <Folder Include="wwwroot\altron\" />
-      <Folder Include="wwwroot\logs\" />
-    </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Pages\Home\" />
+    <Folder Include="recipes\images\output\" />
+    <Folder Include="wwwroot\altron\" />
+    <Folder Include="wwwroot\logs\" />
+    <Folder Include=".nuget\" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <Content Update="wwwroot\openapi.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-    </ItemGroup>
+  <ItemGroup>
+    <Content Update="wwwroot\openapi.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
-    <ProjectExtensions><VisualStudio><UserProperties TemplateFeatures="NETCORE" /></VisualStudio></ProjectExtensions>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties TemplateFeatures="NETCORE" />
+    </VisualStudio>
+  </ProjectExtensions>
 
 </Project>

@@ -2,8 +2,6 @@
 
 using Swashbuckle.AspNetCore.Filters;
 
-using static DevExpress.Data.Helpers.ExpressiveSortInfo;
-
 namespace ai_it_wiki.Models.Altron
 {
   /// <summary>
