@@ -21,7 +21,14 @@ namespace ai_it_wiki.Controllers
       var optimizer = new ProductRatingOptimizer(new OzonClientStub());
       await optimizer.OptimizeSkuAsync(sku);
       return Ok();
+      if (sku <= 0)
+      {
+        return BadRequest("SKU должен быть положительным числом.");
       }
+      var optimizer = new ProductRatingOptimizer(new OzonClientStub());
+      await optimizer.OptimizeSkuAsync(sku);
+      return Ok();
+    }
     private readonly IOzonApiService _ozonApiService;
     private readonly IOpenAiService _openAiService;
     private readonly ILogger<LLMOpenAPIController> _logger;
