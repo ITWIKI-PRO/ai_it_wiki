@@ -59,7 +59,21 @@ namespace ai_it_wiki.Services.Ozon
             }
 
             var json = File.ReadAllText(StateFile);
-            return JsonSerializer.Deserialize<HashSet<long>>(json) ?? new HashSet<long>();
+            try
+            {
+                var json = File.ReadAllText(StateFile);
+                return JsonSerializer.Deserialize<HashSet<long>>(json) ?? new HashSet<long>();
+            }
+            catch (IOException)
+            {
+                // Optionally log the error
+                return new HashSet<long>();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Optionally log the error
+                return new HashSet<long>();
+            }
         }
 
         private void SaveState()
