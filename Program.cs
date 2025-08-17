@@ -4,6 +4,8 @@ using ai_it_wiki.Models;
 using ai_it_wiki.Services.OpenAI;
 using ai_it_wiki.Services.TelegramBot;
 using ai_it_wiki.Services.Youtube;
+using ai_it_wiki.Services.Ozon;
+using ai_it_wiki.Options;
 
 using Kwork;
 
@@ -43,6 +45,7 @@ builder.Services
 //  e.OpenApiVersion = OpenApiSpecVersion.OpenApi3_0;
 //});
 var services = new ServiceCollection();
+// TODO[recommended]: рассмотреть удаление неиспользуемой коллекции services
 
 var mySqlConnectionString = builder.Configuration.GetConnectionString("context");
 
@@ -139,8 +142,11 @@ builder.WebHost.ConfigureKestrel(options =>
 });
 
 
-// Add OpenAIService
-builder.Services.AddSingleton<OpenAIService>(new OpenAIService(builder.Configuration["Api:OpenAI"], builder.Configuration["Proxy:String"]));
+builder.Services.Configure<OzonOptions>(builder.Configuration.GetSection("Ozon"));
+builder.Services.Configure<OpenAiOptions>(builder.Configuration.GetSection("OpenAI"));
+builder.Services.AddHttpClient<IOzonApiService, OzonApiService>();
+builder.Services.AddSingleton<OpenAIService>();
+builder.Services.AddSingleton<IOpenAiService>(sp => sp.GetRequiredService<OpenAIService>());
 builder.Services.AddSingleton<KworkManager>();
 
 builder.Services.AddSingleton<YoutubeService>();
