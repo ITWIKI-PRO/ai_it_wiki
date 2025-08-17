@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace ai_it_wiki.Controllers
 {
@@ -15,20 +16,7 @@ namespace ai_it_wiki.Controllers
   [ApiController]
   public class LLMOpenAPIController : ControllerBase
   {
-    [HttpPost("optimize-sku")]
-    public async Task<IActionResult> OptimizeSku([FromQuery] long sku)
-    {
-      var optimizer = new ProductRatingOptimizer(new OzonClientStub());
-      await optimizer.OptimizeSkuAsync(sku);
-      return Ok();
-      if (sku <= 0)
-      {
-        return BadRequest("SKU должен быть положительным числом.");
-      }
-      var optimizer = new ProductRatingOptimizer(new OzonClientStub());
-      await optimizer.OptimizeSkuAsync(sku);
-      return Ok();
-    }
+
     private readonly IOzonApiService _ozonApiService;
     private readonly IOpenAiService _openAiService;
     private readonly ILogger<LLMOpenAPIController> _logger;
@@ -41,11 +29,34 @@ namespace ai_it_wiki.Controllers
     }
 
     /// <summary>
+    /// Оптимизировать рейтинг карточки товара по SKU
+    /// </summary>
+    /// <param name="sku">SKU товара</param>
+    /// <returns>Результат оптимизации</returns>
+    [HttpPost("optimize-sku")]
+    [SwaggerOperation(Summary = "Оптимизировать рейтинг карточки товара по SKU", Description = "Оптимизирует карточку товара по SKU")]
+    [SwaggerResponse(StatusCodes.Status200OK, "Успешно")]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректный SKU")]
+    public async Task<IActionResult> OptimizeSku([FromQuery] long sku)
+    {
+      if (sku <= 0)
+      {
+        return BadRequest("SKU должен быть положительным числом.");
+      }
+      var optimizer = new ProductRatingOptimizer(new OzonClientStub());
+      await optimizer.OptimizeSkuAsync(sku);
+      return Ok();
+    }
+
+    /// <summary>
     /// Оптимизировать контент карточек товаров Ozon
     /// </summary>
     /// <param name="request">Список SKU</param>
     /// <returns>Итоговый контент-рейтинг по каждому SKU</returns>
     [HttpPost("optimize")]
+    [SwaggerOperation(Summary = "Оптимизировать контент карточек товаров Ozon", Description = "Оптимизирует контент карточек товаров по списку SKU")]
+    [SwaggerResponse(StatusCodes.Status200OK, "Успешно", typeof(List<object>))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Список SKU не может быть пустым")]
     public async Task<IActionResult> Optimize([FromBody] OptimizeRequest request, CancellationToken cancellationToken)
     {
       if (request?.Skus == null || request.Skus.Count == 0)

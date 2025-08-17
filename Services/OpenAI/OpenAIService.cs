@@ -34,7 +34,7 @@ namespace ai_it_wiki.Services.OpenAI
 
     public async Task<string> SendMessageAsync(DialogSettings dialogSettings, string text)
     {
-      _logger.LogInformation("Отправка сообщения в OpenAI: {Text}", text);
+     // _logger.LogInformation("Отправка сообщения в OpenAI: {Text}", text);
       ChatRequest chatRequest = new ChatRequest()
       {
         MaxTokens = 4000,
@@ -46,31 +46,31 @@ namespace ai_it_wiki.Services.OpenAI
       {
         var answer = await Chat.CreateChatCompletionAsync(chatRequest);
         var result = answer.Choices[0].Message.TextContent;
-        _logger.LogInformation("Ответ OpenAI получен");
+       // _logger.LogInformation("Ответ OpenAI получен");
         return result;
       }
       catch (HttpRequestException ex)
       {
-        _logger.LogError(ex, "Сетевая ошибка при обращении к OpenAI");
+       // _logger.LogError(ex, "Сетевая ошибка при обращении к OpenAI");
         // TODO[critical]: реализовать повторные попытки и fallback-сценарии
         throw;
       }
       catch (TaskCanceledException ex)
       {
-        _logger.LogError(ex, "Таймаут при обращении к OpenAI");
+       // _logger.LogError(ex, "Таймаут при обращении к OpenAI");
         // TODO[critical]: реализовать повторные попытки и fallback-сценарии
         throw;
       }
       catch (Exception ex)
       {
-        _logger.LogError(ex, "Неожиданная ошибка при обращении к OpenAI");
+       // _logger.LogError(ex, "Неожиданная ошибка при обращении к OpenAI");
         throw;
       }
     }
 
     public async Task<string> SendMessageAsync(string text)
     {
-      _logger.LogInformation("Отправка сообщения в OpenAI: {Text}", text);
+     // _logger.LogInformation("Отправка сообщения в OpenAI: {Text}", text);
       ChatRequest chatRequest = new ChatRequest()
       {
         MaxTokens = 4000,
@@ -82,31 +82,31 @@ namespace ai_it_wiki.Services.OpenAI
       {
         var answer = await Chat.CreateChatCompletionAsync(chatRequest);
         var result = answer.Choices[0].Message.TextContent;
-        _logger.LogInformation("Ответ OpenAI получен");
+       // _logger.LogInformation("Ответ OpenAI получен");
         return result;
       }
       catch (HttpRequestException ex)
       {
-        _logger.LogError(ex, "Сетевая ошибка при обращении к OpenAI");
+       // _logger.LogError(ex, "Сетевая ошибка при обращении к OpenAI");
         // TODO[critical]: реализовать повторные попытки и fallback-сценарии
         throw;
       }
       catch (TaskCanceledException ex)
       {
-        _logger.LogError(ex, "Таймаут при обращении к OpenAI");
+       // _logger.LogError(ex, "Таймаут при обращении к OpenAI");
         // TODO[critical]: реализовать повторные попытки и fallback-сценарии
         throw;
       }
       catch (Exception ex)
       {
-        _logger.LogError(ex, "Неожиданная ошибка при обращении к OpenAI");
+       // _logger.LogError(ex, "Неожиданная ошибка при обращении к OpenAI");
         throw;
       }
     }
 
     public async void SendMessageWithStreamAsync(string text, Action<ChatResult> callBack)
     {
-      _logger.LogInformation("Стриминговый запрос в OpenAI: {Text}", text);
+     // _logger.LogInformation("Стриминговый запрос в OpenAI: {Text}", text);
       ChatRequest chatRequest = new ChatRequest()
       {
         MaxTokens = 8000,
@@ -117,27 +117,27 @@ namespace ai_it_wiki.Services.OpenAI
       try
       {
         await Chat.StreamChatAsync(chatRequest, callBack);
-        _logger.LogInformation("Стриминговый ответ получен");
+       // _logger.LogInformation("Стриминговый ответ получен");
       }
       catch (HttpRequestException ex)
       {
-        _logger.LogError(ex, "Сетевая ошибка при стриминговом запросе к OpenAI");
+       // _logger.LogError(ex, "Сетевая ошибка при стриминговом запросе к OpenAI");
         // TODO[critical]: реализовать повторные попытки и fallback-сценарии
       }
       catch (TaskCanceledException ex)
       {
-        _logger.LogError(ex, "Таймаут при стриминговом запросе к OpenAI");
+       // _logger.LogError(ex, "Таймаут при стриминговом запросе к OpenAI");
         // TODO[critical]: реализовать повторные попытки и fallback-сценарии
       }
       catch (Exception ex)
       {
-        _logger.LogError(ex, "Неожиданная ошибка при стриминговом запросе к OpenAI");
+       // _logger.LogError(ex, "Неожиданная ошибка при стриминговом запросе к OpenAI");
       }
     }
 
     public async Task<int> SendMessageWithStreamAsync(List<ChatMessage> chatMessages, Action<ChatResult> callBack, string systemMessage = "Ты полезный ассистент", int maxTokens = 8000, string model = "gpt-40")
     {
-      _logger.LogInformation("Стриминговый запрос в OpenAI с {Count} сообщениями", chatMessages.Count);
+     // _logger.LogInformation("Стриминговый запрос в OpenAI с {Count} сообщениями", chatMessages.Count);
       //счетаем количество токенов
       int tokens = 0;
       var encoder = ModelToEncoder.For("gpt-4o");
@@ -157,21 +157,21 @@ namespace ai_it_wiki.Services.OpenAI
       try
       {
         await Chat.StreamChatAsync(chatRequest, callBack);
-        _logger.LogInformation("Стриминговый ответ получен");
+       // _logger.LogInformation("Стриминговый ответ получен");
       }
       catch (HttpRequestException ex)
       {
-        _logger.LogError(ex, "Сетевая ошибка при стриминговом запросе к OpenAI");
+       // _logger.LogError(ex, "Сетевая ошибка при стриминговом запросе к OpenAI");
         // TODO[critical]: реализовать повторные попытки и fallback-сценарии
       }
       catch (TaskCanceledException ex)
       {
-        _logger.LogError(ex, "Таймаут при стриминговом запросе к OpenAI");
+       // _logger.LogError(ex, "Таймаут при стриминговом запросе к OpenAI");
         // TODO[critical]: реализовать повторные попытки и fallback-сценарии
       }
       catch (Exception ex)
       {
-        _logger.LogError(ex, "Неожиданная ошибка при стриминговом запросе к OpenAI");
+       // _logger.LogError(ex, "Неожиданная ошибка при стриминговом запросе к OpenAI");
       }
       return tokens;
     }
@@ -195,7 +195,7 @@ namespace ai_it_wiki.Services.OpenAI
 
     public async Task<Move> GetNextMoveWithHistory(List<List<int>> board, Move lastMove, List<MoveRecord> moveHistory, string tactic)
     {
-      _logger.LogInformation("Получение следующего хода для игры в ГО");
+     // _logger.LogInformation("Получение следующего хода для игры в ГО");
       // Преобразуем состояние доски в строку
       string boardState = JsonConvert.SerializeObject(board).Replace("],[", "\n").Replace("]]", string.Empty).Replace("[[", string.Empty);
 
@@ -245,24 +245,24 @@ namespace ai_it_wiki.Services.OpenAI
       }
       catch (HttpRequestException ex)
       {
-        _logger.LogError(ex, "Сетевая ошибка при запросе следующего хода к OpenAI");
+       // _logger.LogError(ex, "Сетевая ошибка при запросе следующего хода к OpenAI");
         // TODO[critical]: реализовать повторные попытки и fallback-сценарии
         throw;
       }
       catch (TaskCanceledException ex)
       {
-        _logger.LogError(ex, "Таймаут при запросе следующего хода к OpenAI");
+       // _logger.LogError(ex, "Таймаут при запросе следующего хода к OpenAI");
         // TODO[critical]: реализовать повторные попытки и fallback-сценарии
         throw;
       }
       catch (JsonException ex)
       {
-        _logger.LogError(ex, "Ошибка разбора ответа OpenAI");
+       // _logger.LogError(ex, "Ошибка разбора ответа OpenAI");
         throw;
       }
       catch (Exception ex)
       {
-        _logger.LogError(ex, "Неожиданная ошибка при запросе следующего хода к OpenAI");
+       // _logger.LogError(ex, "Неожиданная ошибка при запросе следующего хода к OpenAI");
         throw;
       }
     }
@@ -270,7 +270,7 @@ namespace ai_it_wiki.Services.OpenAI
     //метод отправки фотографии на распознование
     public async Task<string> SendPhotoAsync(string photo, string comment = null)
     {
-      _logger.LogInformation("Отправка изображения в OpenAI");
+     // _logger.LogInformation("Отправка изображения в OpenAI");
       var chatRequest = new ChatRequest()
       {
         MaxTokens = 8000,
@@ -291,60 +291,60 @@ namespace ai_it_wiki.Services.OpenAI
       {
         var answer = await Chat.CreateChatCompletionAsync(chatRequest);
         var result = answer.Choices[0].Message.TextContent;
-        _logger.LogInformation("Ответ OpenAI по изображению получен");
+       // _logger.LogInformation("Ответ OpenAI по изображению получен");
         return result;
       }
       catch (HttpRequestException ex)
       {
-        _logger.LogError(ex, "Сетевая ошибка при отправке изображения в OpenAI");
+       // _logger.LogError(ex, "Сетевая ошибка при отправке изображения в OpenAI");
         // TODO[critical]: реализовать повторные попытки и fallback-сценарии
         throw;
       }
       catch (TaskCanceledException ex)
       {
-        _logger.LogError(ex, "Таймаут при отправке изображения в OpenAI");
+       // _logger.LogError(ex, "Таймаут при отправке изображения в OpenAI");
         // TODO[critical]: реализовать повторные попытки и fallback-сценарии
         throw;
       }
       catch (Exception ex)
       {
-        _logger.LogError(ex, "Неожиданная ошибка при отправке изображения в OpenAI");
+       // _logger.LogError(ex, "Неожиданная ошибка при отправке изображения в OpenAI");
         throw;
       }
     }
 
     public async Task<List<OpenAI_API.Models.Model>> GetModelsAsync()
     {
-      _logger.LogInformation("Получение списка моделей OpenAI");
+     // _logger.LogInformation("Получение списка моделей OpenAI");
       try
       {
         var models = Models;
         var result = await models.GetModelsAsync();
-        _logger.LogInformation("Получено моделей: {Count}", result.Count);
+       // _logger.LogInformation("Получено моделей: {Count}", result.Count);
         return result;
       }
       catch (HttpRequestException ex)
       {
-        _logger.LogError(ex, "Сетевая ошибка при получении списка моделей");
+       // _logger.LogError(ex, "Сетевая ошибка при получении списка моделей");
         // TODO[critical]: реализовать повторные попытки и fallback-сценарии
         throw;
       }
       catch (TaskCanceledException ex)
       {
-        _logger.LogError(ex, "Таймаут при получении списка моделей");
+       // _logger.LogError(ex, "Таймаут при получении списка моделей");
         // TODO[critical]: реализовать повторные попытки и fallback-сценарии
         throw;
       }
       catch (Exception ex)
       {
-        _logger.LogError(ex, "Неожиданная ошибка при получении списка моделей");
+       // _logger.LogError(ex, "Неожиданная ошибка при получении списка моделей");
         throw;
       }
     }
 
     public async Task<string> SendDataToChatGPTAsync(string telemetryData)
     {
-      _logger.LogInformation("Отправка телеметрии в OpenAI");
+     // _logger.LogInformation("Отправка телеметрии в OpenAI");
       // Формируем запрос к ChatGPT
       var chatRequest = new ChatRequest()
       {
@@ -373,22 +373,69 @@ namespace ai_it_wiki.Services.OpenAI
       }
       catch (HttpRequestException ex)
       {
-        _logger.LogError(ex, "Сетевая ошибка при отправке телеметрии в OpenAI");
+       // _logger.LogError(ex, "Сетевая ошибка при отправке телеметрии в OpenAI");
         // TODO[critical]: реализовать повторные попытки и fallback-сценарии
         result = ex.Message;
       }
       catch (TaskCanceledException ex)
       {
-        _logger.LogError(ex, "Таймаут при отправке телеметрии в OpenAI");
+       // _logger.LogError(ex, "Таймаут при отправке телеметрии в OpenAI");
         // TODO[critical]: реализовать повторные попытки и fallback-сценарии
         result = ex.Message;
       }
       catch (Exception ex)
       {
-        _logger.LogError(ex, "Неожиданная ошибка при отправке телеметрии в OpenAI");
+       // _logger.LogError(ex, "Неожиданная ошибка при отправке телеметрии в OpenAI");
         result = ex.Message;
       }
       return result;
+    }
+    public async Task<string> GenerateImprovedContentAsync(string productInfo, string productDescription, CancellationToken cancellationToken = default)
+    {
+      // _logger.LogInformation("Генерация улучшенного контента для продукта: {ProductInfo}", productInfo);
+
+      var chatRequest = new ChatRequest()
+      {
+        MaxTokens = 2000,
+        Temperature = 0.7,
+        Model = new OpenAI_API.Models.Model("gpt-4o-2024-08-06"),
+        Messages = new List<ChatMessage>
+            {
+                new ChatMessage(ChatMessageRole.System, "You are an expert in marketing and content creation. Generate an improved product description based on the provided product information and description. Ensure the content is engaging, concise, and highlights the key features and benefits of the product."),
+                new ChatMessage(ChatMessageRole.User, $"Product Info: {productInfo}\nProduct Description: {productDescription}")
+            }
+      };
+
+      try
+      {
+        // Removed the cancellationToken parameter as it is not supported by the method signature
+        var response = await Chat.CreateChatCompletionAsync(chatRequest);
+
+        if (response != null && response.Choices.Any())
+        {
+          return response.Choices[0].Message.TextContent;
+        }
+        else
+        {
+          // _logger.LogWarning("Ответ от OpenAI отсутствует");
+          return "No response from GPT";
+        }
+      }
+      catch (HttpRequestException ex)
+      {
+        // _logger.LogError(ex, "Сетевая ошибка при генерации улучшенного контента");
+        throw;
+      }
+      catch (TaskCanceledException ex)
+      {
+        // _logger.LogError(ex, "Таймаут при генерации улучшенного контента");
+        throw;
+      }
+      catch (Exception ex)
+      {
+        // _logger.LogError(ex, "Неожиданная ошибка при генерации улучшенного контента");
+        throw;
+      }
     }
   }
 }
