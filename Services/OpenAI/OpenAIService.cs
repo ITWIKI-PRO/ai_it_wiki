@@ -1,6 +1,7 @@
 ﻿using ai_it_wiki.Controllers;
 using ai_it_wiki.Data;
 using ai_it_wiki.Models;
+using ai_it_wiki.Options;
 
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -9,6 +10,7 @@ using NuGet.Packaging;
 
 using OpenAI_API;
 using OpenAI_API.Chat;
+using Microsoft.Extensions.Options;
 
 using System.Net.Http;
 using System.Text;
@@ -22,12 +24,12 @@ namespace ai_it_wiki.Services.OpenAI
 {
   public class OpenAIService : OpenAIAPI, IOpenAiService
   {
-    private readonly ILogger<OpenAIService> _logger;
+    private readonly OpenAiOptions _options;
 
-    public OpenAIService(string apiKey, string proxyString, ILogger<OpenAIService> logger) : base(new APIAuthentication(apiKey))
+    public OpenAIService(IOptions<OpenAiOptions> options) : base(new APIAuthentication(options.Value.ApiKey))
     {
-      _logger = logger;
-      HttpClientFactory = new Internal.HttpProxyClientFactory(proxyString);
+      _options = options.Value;
+      HttpClientFactory = new Internal.HttpProxyClientFactory(_options.Proxy);
     }
 
     public async Task<string> SendMessageAsync(DialogSettings dialogSettings, string text)
