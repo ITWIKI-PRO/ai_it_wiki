@@ -13,7 +13,12 @@ namespace ai_it_wiki.Services.Ozon
 
         public ProductRatingOptimizer(IOzonClient client)
         {
+        private readonly string _stateFile;
+
+        public ProductRatingOptimizer(IOzonClient client, string stateFile = "Data/optimized_skus.json")
+        {
             _client = client;
+            _stateFile = stateFile;
             _optimizedSkus = LoadState();
         }
 
