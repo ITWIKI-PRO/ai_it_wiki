@@ -39,7 +39,7 @@ namespace ai_it_wiki.Services.Ozon
             var attempts = 0;
             while (rating < 100 && attempts < MaxAttempts)
             {
-                await Task.Delay(1000);
+                await Task.Delay(DelayMilliseconds);
                 rating = await _client.GetRatingAsync(sku);
                 attempts++;
             }
