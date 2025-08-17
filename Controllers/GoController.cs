@@ -1,6 +1,8 @@
 ﻿using ai_it_wiki.Services.OpenAI;
+using ai_it_wiki.Models;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
 
@@ -12,10 +14,12 @@ namespace ai_it_wiki.Controllers
   public class GoController : Controller
   {
     private readonly OpenAIService _openAiService;
+    private readonly ILogger<GoController> _logger;
 
-    public GoController([FromServices] OpenAIService openAiService)
+    public GoController([FromServices] OpenAIService openAiService, ILogger<GoController> logger)
     {
       _openAiService = openAiService as OpenAIService;
+      _logger = logger;
     }
 
     public IActionResult Index()
@@ -26,15 +30,29 @@ namespace ai_it_wiki.Controllers
     [HttpPost]
     public async Task<IActionResult> GetAiMove([FromBody] MoveRequest request)
     {
-      if (request == null) return StatusCode(StatusCodes.Status400BadRequest, nameof(request));
+      _logger.LogInformation("Запрос следующего хода для игры в ГО");
+      if (request == null)
+      {
+        _logger.LogWarning("Пустой запрос на ход");
+        return StatusCode(StatusCodes.Status400BadRequest, new ErrorResponse(nameof(request)));
+      }
       if (request.Attempt >= 5)
       {
-        return BadRequest("ИИ не нашел достойного хода, человек побеждает!");
+        _logger.LogWarning("Превышено количество попыток");
+        return BadRequest(new ErrorResponse("ИИ не нашел достойного хода, человек побеждает!"));
       }
 
-      var aiMove = await _openAiService.GetNextMoveWithHistory(request.Board, request.Move, request.MoveHistory, request.AITactic);
-
-      return Ok(new { aiMove });
+      try
+      {
+        var aiMove = await _openAiService.GetNextMoveWithHistory(request.Board, request.Move, request.MoveHistory, request.AITactic);
+        _logger.LogInformation("Ответ с ходом получен");
+        return Ok(new { aiMove });
+      }
+      catch (Exception ex)
+      {
+        _logger.LogError(ex, "Ошибка при получении следующего хода");
+        return StatusCode(StatusCodes.Status500InternalServerError, new ErrorResponse("Ошибка при обращении к OpenAI"));
+      }
     }
 
 

@@ -10,6 +10,7 @@ using Kwork;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.Logging;
 
 using System.Reflection;
 using System.Text;
@@ -140,7 +141,11 @@ builder.WebHost.ConfigureKestrel(options =>
 
 
 // Add OpenAIService
-builder.Services.AddSingleton<OpenAIService>(new OpenAIService(builder.Configuration["Api:OpenAI"], builder.Configuration["Proxy:String"]));
+builder.Services.AddSingleton<OpenAIService>(sp =>
+  new OpenAIService(
+    builder.Configuration["Api:OpenAI"],
+    builder.Configuration["Proxy:String"],
+    sp.GetRequiredService<ILogger<OpenAIService>>()));
 builder.Services.AddSingleton<KworkManager>();
 
 builder.Services.AddSingleton<YoutubeService>();
