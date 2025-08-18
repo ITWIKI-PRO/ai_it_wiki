@@ -13,7 +13,6 @@ namespace ai_it_wiki.Services.OpenAI
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Строка с улучшенным контентом</returns>
     Task<string> GenerateImprovedContentAsync(string productInfo, string productDescription, CancellationToken cancellationToken = default);
-    // TODO[moderate]: Реализовать метод генерации контента через OpenAI
   }
 }
 
