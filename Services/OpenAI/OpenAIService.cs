@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 
 using Tiktoken;
 
@@ -34,76 +35,64 @@ namespace ai_it_wiki.Services.OpenAI
       HttpClientFactory = new Internal.HttpProxyClientFactory(_options.Proxy);
     }
 
-    public async Task<string> SendMessageAsync(DialogSettings dialogSettings, string text)
+    private async Task<string> ExecuteWithRetryAsync(ChatRequest chatRequest, CancellationToken cancellationToken)
+    {
+      const int maxRetries = 3;
+      for (int attempt = 1; attempt <= maxRetries; attempt++)
+      {
+        // Chat API не поддерживает токены отмены, поэтому проверяем их вручную
+        cancellationToken.ThrowIfCancellationRequested();
+        try
+        {
+          var answer = await Chat.CreateChatCompletionAsync(chatRequest);
+          return answer.Choices[0].Message.TextContent;
+        }
+        catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
+        {
+          if (attempt == maxRetries)
+            break;
+          await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, attempt)), cancellationToken);
+        }
+      }
+
+      chatRequest.Model = new OpenAI_API.Models.Model("gpt-3.5-turbo");
+      try
+      {
+        var fallbackAnswer = await Chat.CreateChatCompletionAsync(chatRequest);
+        return fallbackAnswer.Choices[0].Message.TextContent;
+      }
+      catch
+      {
+        return "Сервис OpenAI временно недоступен.";
+      }
+    }
+
+    public async Task<string> SendMessageAsync(DialogSettings dialogSettings, string text, CancellationToken cancellationToken = default)
     {
      // _logger.LogInformation("Отправка сообщения в OpenAI: {Text}", text);
-      ChatRequest chatRequest = new ChatRequest()
+      var chatRequest = new ChatRequest()
       {
         MaxTokens = 4000,
         Temperature = 0.7,
         Model = new OpenAI_API.Models.Model("gpt-4o-2024-08-06")
       };
       chatRequest.Messages.Add(new ChatMessage(ChatMessageRole.User, text));
-      try
-      {
-        var answer = await Chat.CreateChatCompletionAsync(chatRequest);
-        var result = answer.Choices[0].Message.TextContent;
-       // _logger.LogInformation("Ответ OpenAI получен");
-        return result;
-      }
-      catch (HttpRequestException ex)
-      {
-       // _logger.LogError(ex, "Сетевая ошибка при обращении к OpenAI");
-        // TODO[critical]: реализовать повторные попытки и fallback-сценарии
-        throw;
-      }
-      catch (TaskCanceledException ex)
-      {
-       // _logger.LogError(ex, "Таймаут при обращении к OpenAI");
-        // TODO[critical]: реализовать повторные попытки и fallback-сценарии
-        throw;
-      }
-      catch (Exception ex)
-      {
-       // _logger.LogError(ex, "Неожиданная ошибка при обращении к OpenAI");
-        throw;
-      }
+
+      return await ExecuteWithRetryAsync(chatRequest, cancellationToken);
     }
 
-    public async Task<string> SendMessageAsync(string text)
+    public async Task<string> SendMessageAsync(string text, CancellationToken cancellationToken = default)
     {
      // _logger.LogInformation("Отправка сообщения в OpenAI: {Text}", text);
-      ChatRequest chatRequest = new ChatRequest()
+      var chatRequest = new ChatRequest()
       {
         MaxTokens = 4000,
         Temperature = 0.7,
         Model = new OpenAI_API.Models.Model("gpt-4o-2024-08-06"),
         Messages = new List<ChatMessage> { new ChatMessage(ChatMessageRole.User, text) }
       };
-      try
-      {
-        var answer = await Chat.CreateChatCompletionAsync(chatRequest);
-        var result = answer.Choices[0].Message.TextContent;
-       // _logger.LogInformation("Ответ OpenAI получен");
-        return result;
-      }
-      catch (HttpRequestException ex)
-      {
-       // _logger.LogError(ex, "Сетевая ошибка при обращении к OpenAI");
-        // TODO[critical]: реализовать повторные попытки и fallback-сценарии
-        throw;
-      }
-      catch (TaskCanceledException ex)
-      {
-       // _logger.LogError(ex, "Таймаут при обращении к OpenAI");
-        // TODO[critical]: реализовать повторные попытки и fallback-сценарии
-        throw;
-      }
-      catch (Exception ex)
-      {
-       // _logger.LogError(ex, "Неожиданная ошибка при обращении к OpenAI");
-        throw;
-      }
+
+      return await ExecuteWithRetryAsync(chatRequest, cancellationToken);
     }
 
     public async void SendMessageWithStreamAsync(string text, Action<ChatResult> callBack)
@@ -408,36 +397,7 @@ namespace ai_it_wiki.Services.OpenAI
             }
       };
 
-      try
-      {
-        // Removed the cancellationToken parameter as it is not supported by the method signature
-        var response = await Chat.CreateChatCompletionAsync(chatRequest);
-
-        if (response != null && response.Choices.Any())
-        {
-          return response.Choices[0].Message.TextContent;
-        }
-        else
-        {
-          // _logger.LogWarning("Ответ от OpenAI отсутствует");
-          return "No response from GPT";
-        }
-      }
-      catch (HttpRequestException ex)
-      {
-        // _logger.LogError(ex, "Сетевая ошибка при генерации улучшенного контента");
-        throw;
-      }
-      catch (TaskCanceledException ex)
-      {
-        // _logger.LogError(ex, "Таймаут при генерации улучшенного контента");
-        throw;
-      }
-      catch (Exception ex)
-      {
-        // _logger.LogError(ex, "Неожиданная ошибка при генерации улучшенного контента");
-        throw;
-      }
+      return await ExecuteWithRetryAsync(chatRequest, cancellationToken);
     }
   }
 }
