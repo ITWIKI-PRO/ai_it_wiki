@@ -62,7 +62,7 @@ namespace ai_it_wiki.Controllers
           rating = await _ozonApiService.GetContentRatingAsync(sku, cancellationToken);
         }
 
-        return Ok(new { sku, rating });
+        return Ok(new { sku, rating }); // TODO[recommended]: использовать OptimizeResult вместо анонимного объекта
       }
       catch (Exception ex)
       {
@@ -76,10 +76,10 @@ namespace ai_it_wiki.Controllers
     /// Оптимизировать контент карточек товаров Ozon
     /// </summary>
     /// <param name="request">Список SKU</param>
-    /// <returns>Итоговый контент-рейтинг по каждому SKU</returns>
+    /// <returns>Список результатов оптимизации по каждому SKU</returns>
     [HttpPost("optimize")]
     [SwaggerOperation(Summary = "Оптимизировать контент карточек товаров Ozon", Description = "Оптимизирует контент карточек товаров по списку SKU")]
-    [SwaggerResponse(StatusCodes.Status200OK, "Успешно", typeof(List<object>))]
+    [SwaggerResponse(StatusCodes.Status200OK, "Успешно", typeof(List<OptimizeResult>))]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Список SKU не может быть пустым")]
     public async Task<IActionResult> Optimize([FromBody] OptimizeRequest request, CancellationToken cancellationToken)
     {
@@ -88,7 +88,7 @@ namespace ai_it_wiki.Controllers
         return BadRequest("Список SKU не может быть пустым.");
       }
 
-      var results = new List<object>();
+      var results = new List<OptimizeResult>();
 
       foreach (var sku in request.Skus)
       {
@@ -110,12 +110,16 @@ namespace ai_it_wiki.Controllers
             rating = await _ozonApiService.GetContentRatingAsync(sku, cancellationToken);
           }
 
-          results.Add(new { sku, rating });
+          results.Add(new OptimizeResult { Sku = sku, Rating = rating });
         }
         catch (Exception ex)
         {
           _logger.LogError(ex, "Ошибка обработки SKU {Sku}", sku);
-          results.Add(new ErrorResponse(ex.Message, details: ex.StackTrace, sku: sku));
+          results.Add(new OptimizeResult
+          {
+            Sku = sku,
+            Error = new ErrorResponse(ex.Message, details: ex.StackTrace, sku: sku)
+          });
         }
       }
 
