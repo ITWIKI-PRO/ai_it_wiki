@@ -2,22 +2,32 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using ai_it_wiki.Options;
 
 namespace ai_it_wiki.Services.Ozon
 {
   public class ProductRatingOptimizer
   {
     private readonly IOzonClient _client;
+    private readonly ILogger<ProductRatingOptimizer> _logger;
     private readonly HashSet<string> _optimizedSkus;
-    private const string StateFile = "Data/optimized_skus.json";
-    private const int DelayMilliseconds = 1000; // Added missing constant  
-
     private readonly string _stateFile;
+    private readonly int _maxAttempts;
+    private readonly int _delayMilliseconds;
 
-    public ProductRatingOptimizer(IOzonClient client, string stateFile = "Data/optimized_skus.json")
+    public ProductRatingOptimizer(
+      IOzonClient client,
+      IOptions<OzonOptions> options,
+      ILogger<ProductRatingOptimizer> logger,
+      string stateFile = "Data/optimized_skus.json")
     {
       _client = client;
+      _logger = logger;
       _stateFile = stateFile;
+      _maxAttempts = options.Value.MaxAttempts;
+      _delayMilliseconds = options.Value.DelayMilliseconds;
       _optimizedSkus = LoadState();
     }
 
@@ -25,13 +35,14 @@ namespace ai_it_wiki.Services.Ozon
     {
       if (_optimizedSkus.Contains(sku))
       {
+        _logger.LogInformation("SKU {Sku} уже оптимизирован, пропуск.", sku);
         return;
       }
 
       var rating = await _client.GetRatingAsync(sku);
       if (rating >= 100)
       {
-        // TODO[recommended]: логгировать пропуск
+        _logger.LogInformation("Рейтинг SKU {Sku} уже {Rating}, оптимизация не требуется.", sku, rating);
         _optimizedSkus.Add(sku);
         SaveState();
         return;
@@ -39,11 +50,10 @@ namespace ai_it_wiki.Services.Ozon
 
       await _client.UpdateCardAsync(sku);
 
-      const int MaxAttempts = 5; // TODO[moderate]: настроить лимит через конфигурацию  
       var attempts = 0;
-      while (rating < 100 && attempts < MaxAttempts)
+      while (rating < 100 && attempts < _maxAttempts)
       {
-        await Task.Delay(DelayMilliseconds);
+        await Task.Delay(_delayMilliseconds);
         rating = await _client.GetRatingAsync(sku);
         attempts++;
       }
@@ -53,46 +63,47 @@ namespace ai_it_wiki.Services.Ozon
         _optimizedSkus.Add(sku);
         SaveState();
       }
+      else
+      {
+        _logger.LogWarning("Не удалось оптимизировать SKU {Sku} после {Attempts} попыток.", sku, attempts);
+      }
     }
 
     private HashSet<string> LoadState()
     {
-      if (!File.Exists(StateFile))
+      if (!File.Exists(_stateFile))
       {
         return new HashSet<string>();
       }
 
       try
       {
-        var json = File.ReadAllText(StateFile);
+        var json = File.ReadAllText(_stateFile);
         return JsonSerializer.Deserialize<HashSet<string>>(json) ?? new HashSet<string>();
       }
-      catch (IOException)
+      catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
       {
-        // Optionally log the error
-        return new HashSet<string>();
-      }
-      catch (UnauthorizedAccessException)
-      {
-        // Optionally log the error
+        _logger.LogError(ex, "Ошибка при загрузке состояния из файла {StateFile}.", _stateFile);
         return new HashSet<string>();
       }
     }
 
     private void SaveState()
     {
-      var json = JsonSerializer.Serialize(_optimizedSkus);
       try
       {
-        File.WriteAllText(StateFile, json);
+        var directory = Path.GetDirectoryName(_stateFile);
+        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        {
+          Directory.CreateDirectory(directory);
+        }
+
+        var json = JsonSerializer.Serialize(_optimizedSkus);
+        File.WriteAllText(_stateFile, json);
       }
-      catch (IOException ex)
+      catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
       {
-        // TODO: log the exception or handle it as needed  
-      }
-      catch (UnauthorizedAccessException ex)
-      {
-        // TODO: log the exception or handle it as needed  
+        _logger.LogError(ex, "Ошибка при сохранении состояния в файл {StateFile}.", _stateFile);
       }
     }
   }
