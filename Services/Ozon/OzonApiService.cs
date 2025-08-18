@@ -1,4 +1,5 @@
 using ai_it_wiki.Options;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Net.Http;
@@ -11,11 +12,13 @@ namespace ai_it_wiki.Services.Ozon
   {
     private readonly HttpClient _httpClient;
     private readonly OzonOptions _options;
+    private readonly ILogger<OzonApiService> _logger;
 
-    public OzonApiService(HttpClient httpClient, IOptions<OzonOptions> options)
+    public OzonApiService(HttpClient httpClient, IOptions<OzonOptions> options, ILogger<OzonApiService> logger)
     {
       _httpClient = httpClient;
       _options = options.Value;
+      _logger = logger;
       _httpClient.BaseAddress = new Uri(_options.BaseUrl);
       _httpClient.DefaultRequestHeaders.Add("Client-Id", _options.ClientId);
       _httpClient.DefaultRequestHeaders.Add("Api-Key", _options.ApiKey);
@@ -165,6 +168,24 @@ namespace ai_it_wiki.Services.Ozon
         {
           throw new InvalidOperationException($"Не удалось разобрать статус импорта. Ответ: {content}", ex);
         }
+      }
+    }
+
+    public async Task UpdateCardAsync(string sku, CancellationToken cancellationToken = default)
+    {
+      try
+      {
+        var payload = new { sku };
+        // TODO[moderate]: добавить остальные необходимые поля для обновления карточки
+        var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+        using var response = await _httpClient.PostAsync("/v1/product/update", content, cancellationToken);
+        response.EnsureSuccessStatusCode();
+        _logger.LogInformation("Карточка товара {Sku} успешно обновлена", sku);
+      }
+      catch (Exception ex)
+      {
+        _logger.LogError(ex, "Ошибка при обновлении карточки товара {Sku}", sku);
+        throw;
       }
     }
   }

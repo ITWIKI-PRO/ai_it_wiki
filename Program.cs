@@ -151,7 +151,6 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.Configure<OzonOptions>(builder.Configuration.GetSection("Ozon"));
 builder.Services.Configure<OpenAiOptions>(builder.Configuration.GetSection("OpenAI"));
 builder.Services.AddHttpClient<IOzonApiService, OzonApiService>();
-builder.Services.AddHttpClient<IOzonClient, OzonClient>();
 builder.Services.AddSingleton<OpenAIService>();
 builder.Services.AddSingleton<IOpenAiService>(sp => sp.GetRequiredService<OpenAIService>());
 builder.Services.AddSingleton<KworkManager>();
