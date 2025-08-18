@@ -8,8 +8,6 @@ using Newtonsoft.Json;
 
 using NuGet.Packaging;
 
-using OpenAI_API;
-using OpenAI_API.Chat;
 using Microsoft.Extensions.Options;
 
 using System.Net.Http;
@@ -17,12 +15,15 @@ using System.Text;
 
 using Tiktoken;
 
-using static OpenAI_API.Chat.ChatMessage;
+using OpenAI;
+using OpenAI.Chat;
+
+
 using static System.Net.Mime.MediaTypeNames;
 
 namespace ai_it_wiki.Services.OpenAI
 {
-  public class OpenAIService : OpenAIAPI, IOpenAiService
+  public class OpenAIService : OpenAIClient, IOpenAiService
   {
     private readonly OpenAiOptions _options;
 
