@@ -32,6 +32,11 @@ namespace ai_it_wiki.Services.Ozon
     /// </summary>
     Task WaitForImportAsync(string taskId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Обновить карточку товара
+    /// </summary>
+    Task UpdateCardAsync(string sku, CancellationToken cancellationToken = default);
+
     // TODO[moderate]: Реализовать взаимодействие с Ozon API
   }
 }
