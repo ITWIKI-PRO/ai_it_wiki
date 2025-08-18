@@ -8,7 +8,7 @@ namespace ai_it_wiki.Services.Ozon
   public class ProductRatingOptimizer
   {
     private readonly IOzonClient _client;
-    private readonly HashSet<long> _optimizedSkus;
+    private readonly HashSet<string> _optimizedSkus;
     private const string StateFile = "Data/optimized_skus.json";
     private const int DelayMilliseconds = 1000; // Added missing constant  
 
@@ -21,7 +21,7 @@ namespace ai_it_wiki.Services.Ozon
       _optimizedSkus = LoadState();
     }
 
-    public async Task OptimizeSkuAsync(long sku)
+    public async Task OptimizeSkuAsync(string sku)
     {
       if (_optimizedSkus.Contains(sku))
       {
@@ -31,7 +31,7 @@ namespace ai_it_wiki.Services.Ozon
       var rating = await _client.GetRatingAsync(sku);
       if (rating >= 100)
       {
-        // TODO[recommended]: логгировать пропуск  
+        // TODO[recommended]: логгировать пропуск
         _optimizedSkus.Add(sku);
         SaveState();
         return;
@@ -55,27 +55,27 @@ namespace ai_it_wiki.Services.Ozon
       }
     }
 
-    private HashSet<long> LoadState()
+    private HashSet<string> LoadState()
     {
       if (!File.Exists(StateFile))
       {
-        return new HashSet<long>();
+        return new HashSet<string>();
       }
 
       try
       {
         var json = File.ReadAllText(StateFile);
-        return JsonSerializer.Deserialize<HashSet<long>>(json) ?? new HashSet<long>();
+        return JsonSerializer.Deserialize<HashSet<string>>(json) ?? new HashSet<string>();
       }
       catch (IOException)
       {
-        // Optionally log the error  
-        return new HashSet<long>();
+        // Optionally log the error
+        return new HashSet<string>();
       }
       catch (UnauthorizedAccessException)
       {
-        // Optionally log the error  
-        return new HashSet<long>();
+        // Optionally log the error
+        return new HashSet<string>();
       }
     }
 
