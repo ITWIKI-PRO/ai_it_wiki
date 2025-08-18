@@ -67,8 +67,8 @@ namespace ai_it_wiki.Controllers
       catch (Exception ex)
       {
         _logger.LogError(ex, "Ошибка обработки SKU {Sku}", sku);
-        // TODO[moderate]: использовать централизованный ErrorResponse
-        return StatusCode(StatusCodes.Status500InternalServerError, new { sku, error = ex.Message });
+        return StatusCode(StatusCodes.Status500InternalServerError,
+            new ErrorResponse(ex.Message, details: ex.StackTrace, sku: sku));
       }
     }
 
@@ -115,7 +115,7 @@ namespace ai_it_wiki.Controllers
         catch (Exception ex)
         {
           _logger.LogError(ex, "Ошибка обработки SKU {Sku}", sku);
-          results.Add(new { sku, error = ex.Message });
+          results.Add(new ErrorResponse(ex.Message, details: ex.StackTrace, sku: sku));
         }
       }
 
