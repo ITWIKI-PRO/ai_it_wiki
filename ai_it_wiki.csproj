@@ -9,8 +9,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-    <PackageReference Include="DevExtreme.AspNet.Data" Version="5.1.0" />
-    <PackageReference Include="DevExtreme.AspNet.Core" Version="24.2.7" />
     <PackageReference Include="Hangfire" Version="1.8.18" />
     <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
