@@ -1,6 +1,7 @@
 ﻿using ai_it_wiki.Data;
 using ai_it_wiki.Internal;
 using ai_it_wiki.Models;
+using ai_it_wiki.Filters;
 using ai_it_wiki.Services.OpenAI;
 using ai_it_wiki.Services.TelegramBot;
 using ai_it_wiki.Services.Youtube;
@@ -60,7 +61,11 @@ services.AddTransient<DialogService>();
 services.AddTransient<OpenAIService>();
 services.AddTransient<YoutubeService>();
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+  options.Filters.Add<GlobalExceptionFilter>();
+});
+builder.Services.AddScoped<GlobalExceptionFilter>();
 // ↓ ДОБАВЬТЕ сразу после AddControllersWithViews();  :contentReference[oaicite:0]{index=0}
 builder.Services.AddEndpointsApiExplorer();
 
