@@ -15,15 +15,16 @@ using System.Text;
 
 using Tiktoken;
 
-using OpenAI;
-using OpenAI.Chat;
+using OpenAI_API;
+using OpenAI_API.Chat;
 
 
 using static System.Net.Mime.MediaTypeNames;
+using static OpenAI_API.Chat.ChatMessage;
 
 namespace ai_it_wiki.Services.OpenAI
 {
-  public class OpenAIService : OpenAIClient, IOpenAiService
+  public class OpenAIService : OpenAIAPI, IOpenAiService
   {
     private readonly OpenAiOptions _options;
 
