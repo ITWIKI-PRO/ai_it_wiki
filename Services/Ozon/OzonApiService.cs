@@ -81,7 +81,7 @@ namespace ai_it_wiki.Services.Ozon
       _httpClient.DefaultRequestHeaders.Add("Api-Key", _options.ApiKey);
     }
 
-    public async Task<int> GetContentRatingAsync(
+    public async Task<double> GetContentRatingAsync(
         string sku,
         CancellationToken cancellationToken = default
     )
@@ -109,14 +109,14 @@ namespace ai_it_wiki.Services.Ozon
       try
       {
         var dto = JsonSerializer.Deserialize<RatingResponse>(content);
-        if (dto?.Result == null || dto.Result.Length == 0)
+        if (dto?.Products == null || dto.Products.Count == 0)
         {
           throw new InvalidOperationException(
               $"Пустой результат рейтинга. Ответ: {content}"
           );
         }
 
-        var item = dto.Result[0];
+        var item = dto.Products[0];
         return item.Rating;
       }
       catch (JsonException ex)
