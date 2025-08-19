@@ -78,6 +78,16 @@
                 "type": "string"
               }
             }
+          },
+          {
+            "name": "part",
+            "in": "query",
+            "description": "Номер части ответа (начиная с 1). Если ответ превышает лимит токенов, контент будет возвращён по частям.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
           }
         ],
         "responses": {
@@ -86,7 +96,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProductInfoListResponse"
+                  "$ref": "#/components/schemas/ChunkedResponseDto"
                 }
               }
             }
@@ -130,9 +140,20 @@
                 "type": "string"
               }
             }
+          },
+          {
+            "name": "part",
+            "in": "query",
+            "description": "Номер части ответа (начиная с 1). Если ответ превышает лимит токенов, контент будет возвращён по частям.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
           }
         ],
         "requestBody": {
+          "description": "Объект запроса, содержащий фильтры для получения списка товаров",
           "content": {
             "application/json": {
               "schema": {
@@ -147,7 +168,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProductInfoListResponse"
+                  "$ref": "#/components/schemas/ChunkedResponseDto"
                 }
               }
             }
@@ -191,9 +212,20 @@
                 "type": "string"
               }
             }
+          },
+          {
+            "name": "part",
+            "in": "query",
+            "description": "Номер части ответа (начиная с 1). Если ответ превышает лимит токенов, контент будет возвращён по частям.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
           }
         ],
         "requestBody": {
+          "description": "Объект запроса, содержащий SKU товара",
           "content": {
             "application/json": {
               "schema": {
@@ -209,7 +241,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProductDescriptionResponseDto"
+                  "$ref": "#/components/schemas/ChunkedResponseDto"
                 },
                 "example": {"sku":"2000000015156","description":"Трёхколодочное сцепление для скутеров Honda Dio...","offer_id":"2000000015156","name":"Плата сцепления TWH тюнинг на скутер Honda Dio..."}
               }
@@ -247,6 +279,7 @@
           {
             "name": "part",
             "in": "query",
+            "description": "Часть ответа, если требуется разбить результат на части.",
             "schema": {
               "type": "integer",
               "format": "int32",
@@ -255,6 +288,7 @@
           }
         ],
         "requestBody": {
+          "description": "Объект запроса, содержащий длину строки.",
           "content": {
             "application/json": {
               "schema": {
@@ -265,16 +299,11 @@
         },
         "responses": {
           "200": {
-            "description": "Успешно сгенерирован текст",
+            "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string"
-                }
-              },
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/ChunkedResponseDto"
                 }
               }
             }
@@ -301,9 +330,20 @@
                 "type": "string"
               }
             }
+          },
+          {
+            "name": "part",
+            "in": "query",
+            "description": "Номер части ответа (начиная с 1). Если ответ превышает лимит токенов, контент будет возвращён по частям.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
           }
         ],
         "requestBody": {
+          "description": "Объект запроса, содержащий список SKU",
           "content": {
             "application/json": {
               "schema": {
@@ -318,7 +358,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RatingResponse"
+                  "$ref": "#/components/schemas/ChunkedResponseDto"
                 }
               }
             }
@@ -329,6 +369,32 @@
   },
   "components": {
     "schemas": {
+      "ChunkedResponseDto": {
+        "type": "object",
+        "properties": {
+          "is_consequential": {
+            "type": "boolean",
+            "description": "Признак, что ответ разбит на последовательные части."
+          },
+          "content": {
+            "type": "string",
+            "description": "Текстовая часть контента (JSON-строка или просто текст).",
+            "nullable": true
+          },
+          "part": {
+            "type": "integer",
+            "description": "Номер части (начиная с 1).",
+            "format": "int32"
+          },
+          "total_parts": {
+            "type": "integer",
+            "description": "Общее количество частей.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Обёртка для больших ответов: либо полный контент, либо часть контента."
+      },
       "ErrorResponse": {
         "type": "object",
         "properties": {
@@ -374,34 +440,6 @@
         "additionalProperties": false,
         "description": "Request body for length-check endpoint"
       },
-      "ProductCommission": {
-        "type": "object",
-        "properties": {
-          "delivery_amount": {
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "percent": {
-            "type": "number",
-            "format": "double"
-          },
-          "return_amount": {
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "sale_schema": {
-            "type": "string",
-            "nullable": true
-          },
-          "value": {
-            "type": "number",
-            "format": "double"
-          }
-        },
-        "additionalProperties": false
-      },
       "ProductDescriptionRequestDto": {
         "type": "object",
         "properties": {
@@ -413,51 +451,6 @@
         },
         "additionalProperties": false,
         "description": "DTO: Запрос получения описания товара по SKU"
-      },
-      "ProductDescriptionResponseDto": {
-        "type": "object",
-        "properties": {
-          "sku": {
-            "type": "string",
-            "description": "SKU товара",
-            "nullable": true
-          },
-          "description": {
-            "type": "string",
-            "description": "Текст описания (может содержать HTML)",
-            "nullable": true
-          },
-          "offer_id": {
-            "type": "string",
-            "description": "Идентификатор товара в Ozon (если доступен)",
-            "nullable": true
-          },
-          "name": {
-            "type": "string",
-            "description": "Название товара (если доступно)",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false,
-        "description": "DTO: Ответ с описанием товара"
-      },
-      "ProductExternalIndexData": {
-        "type": "object",
-        "properties": {
-          "minimal_price": {
-            "type": "string",
-            "nullable": true
-          },
-          "minimal_price_currency": {
-            "type": "string",
-            "nullable": true
-          },
-          "price_index_value": {
-            "type": "number",
-            "format": "double"
-          }
-        },
-        "additionalProperties": false
       },
       "ProductInfoListRequest": {
         "type": "object",
@@ -473,464 +466,6 @@
         },
         "additionalProperties": false
       },
-      "ProductInfoListResponse": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProductItem"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "ProductItem": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
-          "offer_id": {
-            "type": "string",
-            "nullable": true
-          },
-          "is_archived": {
-            "type": "boolean"
-          },
-          "is_autoarchived": {
-            "type": "boolean"
-          },
-          "barcodes": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "description_category_id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "type_id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "images": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "currency_code": {
-            "type": "string",
-            "nullable": true
-          },
-          "marketing_price": {
-            "type": "string",
-            "nullable": true
-          },
-          "min_price": {
-            "type": "string",
-            "nullable": true
-          },
-          "old_price": {
-            "type": "string",
-            "nullable": true
-          },
-          "price": {
-            "type": "string",
-            "nullable": true
-          },
-          "sources": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProductSource"
-            },
-            "nullable": true
-          },
-          "model_info": {
-            "$ref": "#/components/schemas/ProductModelInfo"
-          },
-          "commissions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProductCommission"
-            },
-            "nullable": true
-          },
-          "is_prepayment_allowed": {
-            "type": "boolean"
-          },
-          "volume_weight": {
-            "type": "number",
-            "format": "double"
-          },
-          "has_discounted_fbo_item": {
-            "type": "boolean"
-          },
-          "is_discounted": {
-            "type": "boolean"
-          },
-          "discounted_fbo_stocks": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "stocks": {
-            "$ref": "#/components/schemas/ProductStocks"
-          },
-          "errors": {
-            "type": "array",
-            "items": { },
-            "nullable": true
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "vat": {
-            "type": "string",
-            "nullable": true
-          },
-          "visibility_details": {
-            "$ref": "#/components/schemas/ProductVisibilityDetails"
-          },
-          "price_indexes": {
-            "$ref": "#/components/schemas/ProductPriceIndexes"
-          },
-          "images360": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "is_kgt": {
-            "type": "boolean"
-          },
-          "color_image": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "primary_image": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "statuses": {
-            "$ref": "#/components/schemas/ProductStatuses"
-          },
-          "is_super": {
-            "type": "boolean"
-          },
-          "is_seasonal": {
-            "type": "boolean"
-          },
-          "sku": {
-            "type": "integer",
-            "format": "int64"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ProductModelInfo": {
-        "type": "object",
-        "properties": {
-          "model_id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "count": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ProductOzonIndexData": {
-        "type": "object",
-        "properties": {
-          "minimal_price": {
-            "type": "string",
-            "nullable": true
-          },
-          "minimal_price_currency": {
-            "type": "string",
-            "nullable": true
-          },
-          "price_index_value": {
-            "type": "number",
-            "format": "double"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ProductPriceIndexes": {
-        "type": "object",
-        "properties": {
-          "color_index": {
-            "type": "string",
-            "nullable": true
-          },
-          "external_index_data": {
-            "$ref": "#/components/schemas/ProductExternalIndexData"
-          },
-          "ozon_index_data": {
-            "$ref": "#/components/schemas/ProductOzonIndexData"
-          },
-          "self_marketplaces_index_data": {
-            "$ref": "#/components/schemas/ProductSelfMarketplacesIndexData"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ProductRating": {
-        "type": "object",
-        "properties": {
-          "sku": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "rating": {
-            "type": "number",
-            "format": "double"
-          },
-          "groups": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/RatingGroup"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "ProductSelfMarketplacesIndexData": {
-        "type": "object",
-        "properties": {
-          "minimal_price": {
-            "type": "string",
-            "nullable": true
-          },
-          "minimal_price_currency": {
-            "type": "string",
-            "nullable": true
-          },
-          "price_index_value": {
-            "type": "number",
-            "format": "double"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ProductSource": {
-        "type": "object",
-        "properties": {
-          "sku": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "source": {
-            "type": "string",
-            "nullable": true
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "shipment_type": {
-            "type": "string",
-            "nullable": true
-          },
-          "quant_code": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "ProductStatuses": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "nullable": true
-          },
-          "status_failed": {
-            "type": "string",
-            "nullable": true
-          },
-          "moderate_status": {
-            "type": "string",
-            "nullable": true
-          },
-          "validation_status": {
-            "type": "string",
-            "nullable": true
-          },
-          "status_name": {
-            "type": "string",
-            "nullable": true
-          },
-          "status_description": {
-            "type": "string",
-            "nullable": true
-          },
-          "is_created": {
-            "type": "boolean"
-          },
-          "status_tooltip": {
-            "type": "string",
-            "nullable": true
-          },
-          "status_updated_at": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ProductStockItem": {
-        "type": "object",
-        "properties": {
-          "present": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "reserved": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "sku": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "source": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "ProductStocks": {
-        "type": "object",
-        "properties": {
-          "has_stock": {
-            "type": "boolean"
-          },
-          "stocks": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProductStockItem"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "ProductVisibilityDetails": {
-        "type": "object",
-        "properties": {
-          "has_price": {
-            "type": "boolean"
-          },
-          "has_stock": {
-            "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
-      "RatingCondition": {
-        "type": "object",
-        "properties": {
-          "key": {
-            "type": "string",
-            "nullable": true
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "fulfilled": {
-            "type": "boolean"
-          },
-          "cost": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "RatingGroup": {
-        "type": "object",
-        "properties": {
-          "key": {
-            "type": "string",
-            "nullable": true
-          },
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
-          "rating": {
-            "type": "number",
-            "format": "double"
-          },
-          "weight": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "conditions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/RatingCondition"
-            },
-            "nullable": true
-          },
-          "improve_attributes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/RatingImproveAttribute"
-            },
-            "nullable": true
-          },
-          "improve_at_least": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "RatingImproveAttribute": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "RatingRequest": {
         "type": "object",
         "properties": {
@@ -939,19 +474,6 @@
             "items": {
               "type": "integer",
               "format": "int64"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "RatingResponse": {
-        "type": "object",
-        "properties": {
-          "products": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProductRating"
             },
             "nullable": true
           }
