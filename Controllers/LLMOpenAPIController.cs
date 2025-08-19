@@ -150,7 +150,7 @@ namespace ai_it_wiki.Controllers
         CancellationToken cancellationToken
     )
     {
-      var response = await _ozonApiService.GetRatingBySkusAsync(new[] { sku }, cancellationToken);
+      var response = await _ozonApiService.GetRatingBySkusAsync(new RatingRequest { Skus = new List<long> { sku } }, cancellationToken);
       return Ok(ShapeResponse(response, fields));
     }
 
@@ -165,18 +165,18 @@ namespace ai_it_wiki.Controllers
     )]
     [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(RatingBySkuResponse))]
     public async Task<IActionResult> GetRatingBySkus(
-        [FromBody] IEnumerable<long> skus,
-        [FromQuery] string? fields,
+        [FromBody] RatingRequest ratingRequest,
+        //[FromQuery] string? fields,
         CancellationToken cancellationToken
     )
     {
-      if (skus == null || !skus.Any())
+      if (ratingRequest == null || !ratingRequest.Skus.Any())
         return BadRequest("Список SKU пуст");
 
       try
       {
         // Corrected the issue by removing the assignment to a variable since the method returns void.
-        await _ozonApiService.GetRatingBySkusAsync(skus, cancellationToken);
+        await _ozonApiService.GetRatingBySkusAsync(ratingRequest, cancellationToken);
         return Ok("Рейтинг успешно получен");
       }
       catch (Exception ex)

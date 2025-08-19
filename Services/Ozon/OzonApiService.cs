@@ -25,15 +25,14 @@ namespace ai_it_wiki.Services.Ozon
     }
 
     public async Task<RatingBySkuResponse> GetRatingBySkusAsync(
-        IEnumerable<long> skus,
+        RatingRequest ratingRequest,
         CancellationToken cancellationToken = default
     )
     {
-      var payload = new RatingBySkuRequest { Skus = skus };
       using var request = new HttpRequestMessage(HttpMethod.Post, "/v1/product/rating-by-sku")
       {
         Content = new StringContent(
-              JsonSerializer.Serialize(payload),
+              JsonSerializer.Serialize(ratingRequest),
               Encoding.UTF8,
               "application/json"
           ),

@@ -373,4 +373,75 @@ namespace ai_it_wiki.Models.Ozon
     [JsonPropertyName("product_id")]
     public List<long> ProductId { get; set; } = new List<long>();
   }
+
+  public class RatingRequest
+  {
+    [JsonPropertyName("skus")]
+    public List<long> Skus { get; set; } = new List<long>();
+  }
+
+  public class RatingResponse
+  {
+    [JsonPropertyName("products")]
+    public List<ProductRating> Products { get; set; }
+  }
+
+  public class ProductRating
+  {
+    [JsonPropertyName("sku")]
+    public long Sku { get; set; }
+
+    [JsonPropertyName("rating")]
+    public double Rating { get; set; }
+
+    [JsonPropertyName("groups")]
+    public List<RatingGroup> Groups { get; set; }
+  }
+
+  public class RatingGroup
+  {
+    [JsonPropertyName("key")]
+    public string Key { get; set; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
+
+    [JsonPropertyName("rating")]
+    public double Rating { get; set; }
+
+    [JsonPropertyName("weight")]
+    public int Weight { get; set; }
+
+    [JsonPropertyName("conditions")]
+    public List<RatingCondition> Conditions { get; set; }
+
+    [JsonPropertyName("improve_attributes")]
+    public List<RatingImproveAttribute> ImproveAttributes { get; set; }
+
+    [JsonPropertyName("improve_at_least")]
+    public int ImproveAtLeast { get; set; }
+  }
+
+  public class RatingCondition
+  {
+    [JsonPropertyName("key")]
+    public string Key { get; set; }
+
+    [JsonPropertyName("description")]
+    public string Description { get; set; }
+
+    [JsonPropertyName("fulfilled")]
+    public bool Fulfilled { get; set; }
+
+    [JsonPropertyName("cost")]
+    public int Cost { get; set; }
+  }
+
+  public class RatingImproveAttribute
+  {
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
+  }
 }
