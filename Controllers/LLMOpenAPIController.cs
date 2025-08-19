@@ -33,6 +33,7 @@ namespace ai_it_wiki.Controllers
     /// </summary>
     /// <param name="sku">SKU товара</param>
     /// <returns>Результат оптимизации</returns>
+    // TODO[recommended]: добавить описание параметра cancellationToken в XML-документации
     [HttpPost("optimize-sku")]
     [SwaggerOperation(Summary = "Оптимизировать рейтинг карточки товара по SKU", Description = "Оптимизирует карточку товара по SKU")]
     [SwaggerResponse(StatusCodes.Status200OK, "Успешно")]
@@ -44,32 +45,15 @@ namespace ai_it_wiki.Controllers
         return BadRequest("SKU не должен быть пустым.");
       }
 
-      try
+      var (rating, error) = await OptimizeSingleSkuAsync(sku, cancellationToken);
+
+      if (error != null)
       {
-        var rating = await _ozonApiService.GetContentRatingAsync(sku, cancellationToken);
-
-        if (rating < 100)
-        {
-          var info = await _ozonApiService.GetProductInfoAsync(sku, cancellationToken);
-          var description = await _ozonApiService.GetProductDescriptionAsync(sku, cancellationToken);
-
-          var improvedContent = await _openAiService.GenerateImprovedContentAsync(info, description, cancellationToken);
-
-          var taskId = await _ozonApiService.ImportProductAsync(sku, improvedContent, cancellationToken);
-
-          await _ozonApiService.WaitForImportAsync(taskId, cancellationToken);
-
-          rating = await _ozonApiService.GetContentRatingAsync(sku, cancellationToken);
-        }
-
-        return Ok(new { sku, rating }); // TODO[recommended]: использовать OptimizeResult вместо анонимного объекта
+        return StatusCode(StatusCodes.Status500InternalServerError, error);
       }
-      catch (Exception ex)
-      {
-        _logger.LogError(ex, "Ошибка обработки SKU {Sku}", sku);
-        return StatusCode(StatusCodes.Status500InternalServerError,
-            new ErrorResponse(ex.Message, details: ex.StackTrace, sku: sku));
-      }
+
+      var result = new OptimizeResult { Sku = sku, Rating = rating };
+      return Ok(result);
     }
 
     /// <summary>
@@ -77,6 +61,7 @@ namespace ai_it_wiki.Controllers
     /// </summary>
     /// <param name="request">Список SKU</param>
     /// <returns>Список результатов оптимизации по каждому SKU</returns>
+    // TODO[recommended]: добавить описание параметра cancellationToken в XML-документации
     [HttpPost("optimize")]
     [SwaggerOperation(Summary = "Оптимизировать контент карточек товаров Ozon", Description = "Оптимизирует контент карточек товаров по списку SKU")]
     [SwaggerResponse(StatusCodes.Status200OK, "Успешно", typeof(List<OptimizeResult>))]
@@ -92,39 +77,63 @@ namespace ai_it_wiki.Controllers
 
       foreach (var sku in request.Skus)
       {
-        try
+        var (rating, error) = await OptimizeSingleSkuAsync(sku, cancellationToken);
+        if (error != null)
         {
-          var rating = await _ozonApiService.GetContentRatingAsync(sku, cancellationToken);
-
-          if (rating < 100)
-          {
-            var info = await _ozonApiService.GetProductInfoAsync(sku, cancellationToken);
-            var description = await _ozonApiService.GetProductDescriptionAsync(sku, cancellationToken);
-
-            var improvedContent = await _openAiService.GenerateImprovedContentAsync(info, description, cancellationToken);
-
-            var taskId = await _ozonApiService.ImportProductAsync(sku, improvedContent, cancellationToken);
-
-            await _ozonApiService.WaitForImportAsync(taskId, cancellationToken);
-
-            rating = await _ozonApiService.GetContentRatingAsync(sku, cancellationToken);
-          }
-
-          results.Add(new OptimizeResult { Sku = sku, Rating = rating });
-        }
-        catch (Exception ex)
-        {
-          _logger.LogError(ex, "Ошибка обработки SKU {Sku}", sku);
           results.Add(new OptimizeResult
           {
             Sku = sku,
-            Error = new ErrorResponse(ex.Message, details: ex.StackTrace, sku: sku)
+            Error = error
+          });
+        }
+        else
+        {
+          results.Add(new OptimizeResult
+          {
+            Sku = sku,
+            Rating = rating
           });
         }
       }
 
       return Ok(results);
     }
+
+    private async Task<(int rating, ErrorResponse? error)> OptimizeSingleSkuAsync(string sku, CancellationToken ct)
+    {
+      try
+      {
+        var rating = await _ozonApiService.GetContentRatingAsync(sku, ct);
+
+        if (rating < 100)
+        {
+          var info = await _ozonApiService.GetProductInfoAsync(sku, ct);
+          var description = await _ozonApiService.GetProductDescriptionAsync(sku, ct);
+
+          var improvedContent = await _openAiService.GenerateImprovedContentAsync(info, description, ct);
+
+          var taskId = await _ozonApiService.ImportProductAsync(sku, improvedContent, ct);
+
+          await _ozonApiService.WaitForImportAsync(taskId, ct);
+
+          rating = await _ozonApiService.GetContentRatingAsync(sku, ct);
+        }
+
+        return (rating, null);
+      }
+      catch (Exception ex)
+      {
+        _logger.LogError(ex, "Ошибка обработки SKU {Sku}", sku);
+        return (0, new ErrorResponse(ex.Message, details: ex.StackTrace, sku: sku));
+      }
+    }
+  }
+
+  // Добавьте этот класс, если его нет в вашем проекте
+  public class OptimizeResult
+  {
+    public string Sku { get; set; }
+    public int? Rating { get; set; }
+    public ErrorResponse? Error { get; set; }
   }
 }
-
