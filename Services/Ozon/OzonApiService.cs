@@ -383,6 +383,8 @@ namespace ai_it_wiki.Services.Ozon
         throw;
       }
     }
+
+    #region GetAttributesAsync
     /// <summary>
     /// Возвращает описание характеристик товаров по идентификатору и видимости.
     /// Товар можно искать по offer_id, product_id или sku.
@@ -619,5 +621,14 @@ namespace ai_it_wiki.Services.Ozon
     //  "total": 1,
     //  "last_id": "onVsfA=="
     //}
+
+    #endregion
   }
+
+
+  #region GetAttributesAsync models
+
+
+
+  #endregion
 }
