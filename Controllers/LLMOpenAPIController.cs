@@ -56,7 +56,7 @@ namespace ai_it_wiki.Controllers
         /// <param name="productIds">Фильтр по product_id (необязательно)</param>
         /// <param name="skus">Фильтр по sku (необязательно)</param>
         /// <param name="lastId">Пагинация: last_id (необязательно)</param>
-        /// <param name="limit">Пагинация: limit (по умолчанию 50)</param>
+        /// <param name="limit">Пагинация: limit (по умолчанию 1000)</param>
         /// <param name="fields">Необязательный список полей, которые нужно включить в ответ. Если не задан — вернётся полный объект.</param>
     /// <param name="part">Номер части ответа (начиная с 1). Если ответ превышает лимит токенов, контент будет возвращён по частям.</param>
         /// <param name="cancellationToken">Токен отмены</param>
@@ -98,7 +98,7 @@ namespace ai_it_wiki.Controllers
             {
                 Filter = filter,
                 LastId = lastId,
-                Limit = limit ?? 50,
+                Limit = limit ?? 1000,
             };
 
             try
