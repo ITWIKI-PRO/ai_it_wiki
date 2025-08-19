@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using ai_it_wiki.Models.Ozon;
@@ -38,6 +39,16 @@ namespace ai_it_wiki.Services.Ozon
 
         Task<ProductAttributesResponse> GetAttributesAsync(
             ProductAttributesRequest request,
+            CancellationToken cancellationToken = default
+        );
+
+        /// <summary>
+        /// Получить описания товаров по их идентификаторам.
+        /// </summary>
+        /// <param name="productIds">Список идентификаторов товаров.</param>
+        /// <param name="cancellationToken">Токен отмены.</param>
+        Task<Dictionary<long, string?>> GetProductDescriptionsAsync(
+            IEnumerable<long> productIds,
             CancellationToken cancellationToken = default
         );
 
