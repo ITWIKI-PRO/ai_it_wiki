@@ -12,11 +12,11 @@ public class AddServersDocumentFilter : IDocumentFilter
         {
             new OpenApiServer
             {
-                Url = "https://it-wiki.site/altron",
+                Url = "https://it-wiki.site",
             },
             new OpenApiServer
             {
-                Url = "http://localhost:5000/altron",
+                Url = "http://localhost:5000",
             }
         };
   }

@@ -2,6 +2,7 @@
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
+
 using ai_it_wiki.Data;
 using ai_it_wiki.Filters;
 using ai_it_wiki.Internal;
@@ -12,15 +13,19 @@ using ai_it_wiki.Services.Ozon;
 using ai_it_wiki.Services.Ozon;
 using ai_it_wiki.Services.TelegramBot;
 using ai_it_wiki.Services.Youtube;
+
 using Kwork;
+
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
+
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
 using Swashbuckle.AspNetCore.SwaggerGen;
+
 using Telegram.Bot;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,9 +36,9 @@ Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
 OpenApiInfo openApiInfo = new OpenApiInfo
 {
-    Title = "Altron OpenAPI",
-    Version = "v1",
-    Description = "Документация к REST-API сервиса автоматизации",
+  Title = "Altron OpenAPI",
+  Version = "v1",
+  Description = "Документация к REST-API сервиса автоматизации",
 };
 
 // Add services to the container.
@@ -63,7 +68,7 @@ services.AddTransient<YoutubeService>();
 
 builder.Services.AddControllersWithViews(options =>
 {
-    options.Filters.Add<GlobalExceptionFilter>();
+  options.Filters.Add<GlobalExceptionFilter>();
 });
 builder.Services.AddScoped<GlobalExceptionFilter>();
 
@@ -76,65 +81,65 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
 {
-    //options.SwaggerDoc(
-    //    "v1",
-    //    new OpenApiInfo
-    //    {
-    //        Title = "Altron OpenAPI",
-    //        Version = "v1",
-    //        Description = "Документация коннектора для LLM",
-    //    }
-    //);
-    // Additional Swagger doc containing only endpoints with ApiExplorerSettings(GroupName = "LLMOpenAPI")
-    options.SwaggerDoc(
+  options.SwaggerDoc(
+      "v1",
+      new OpenApiInfo
+      {
+        Title = "Altron OpenAPI",
+        Version = "v1",
+        Description = "Документация коннектора для LLM",
+      }
+  );
+  // Additional Swagger doc containing only endpoints with ApiExplorerSettings(GroupName = "LLMOpenAPI")
+  options.SwaggerDoc(
         "LLMOpenAPI",
         new OpenApiInfo
         {
-            Title = "LLM OpenAPI",
-            Version = "LLM",
-            Description = "Спецификация только для LLM/OpenAI интеграции",
+          Title = "LLM OpenAPI",
+          Version = "LLM",
+          Description = "Спецификация только для LLM/OpenAI интеграции",
         }
     );
-    //  options.TagActionsBy(apiDesc => Array.Empty<string>());
-    options.CustomOperationIds(apiDesc => apiDesc.ActionDescriptor.RouteValues["action"]);
-    options.EnableAnnotations();
+  //  options.TagActionsBy(apiDesc => Array.Empty<string>());
+  options.CustomOperationIds(apiDesc => apiDesc.ActionDescriptor.RouteValues["action"]);
+  options.EnableAnnotations();
 
-    // Подключаем наш DocumentFilter:
-    options.DocumentFilter<AddServersDocumentFilter>();
+  // Подключаем наш DocumentFilter:
+  options.DocumentFilter<AddServersDocumentFilter>();
 
-    options.OperationFilter<RemoveTagsOperationFilter>();
+  options.OperationFilter<RemoveTagsOperationFilter>();
 
-    options.DocumentFilter<StripAltronPrefixFilter>();
+  options.DocumentFilter<StripAltronPrefixFilter>();
 
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    if (!Directory.Exists(xmlPath))
-    {
-        Directory.CreateDirectory(Path.GetDirectoryName(xmlPath));
-    }
-    //if (!File.Exists(xmlFile))
-    //{
-    //  // Создаем пустой XML-файл, если он не существует
-    //  File.Create(xmlPath).Close();
-    //  //File.WriteAllText(xmlPath, "<?xml version=\"1.0\" encoding=\"utf-8\"?><root></root>");
-    //}
+  var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+  var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+  if (!Directory.Exists(xmlPath))
+  {
+    Directory.CreateDirectory(Path.GetDirectoryName(xmlPath));
+  }
+  //if (!File.Exists(xmlFile))
+  //{
+  //  // Создаем пустой XML-файл, если он не существует
+  //  File.Create(xmlPath).Close();
+  //  //File.WriteAllText(xmlPath, "<?xml version=\"1.0\" encoding=\"utf-8\"?><root></root>");
+  //}
 
-    options.IncludeXmlComments(xmlPath, true);
-    options.ExampleFilters();
-    // Include endpoints into separate documents depending on their GroupName
-    options.DocInclusionPredicate(
-        (docName, apiDesc) =>
+  options.IncludeXmlComments(xmlPath, true);
+  options.ExampleFilters();
+  // Include endpoints into separate documents depending on their GroupName
+  options.DocInclusionPredicate(
+      (docName, apiDesc) =>
+      {
+        var groupName = apiDesc.GroupName;
+        if (string.IsNullOrEmpty(groupName))
         {
-            var groupName = apiDesc.GroupName;
-            if (string.IsNullOrEmpty(groupName))
-            {
-                // default endpoints go to v1
-                return docName == "v1";
-            }
-            return docName == groupName;
+          // default endpoints go to v1
+          return docName == "v1";
         }
-    );
-    //options.CustomSchemaIds(type => type.FullName);
+        return docName == groupName;
+      }
+  );
+  //options.CustomSchemaIds(type => type.FullName);
 });
 
 builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
@@ -148,23 +153,23 @@ builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
 // Add CORS policy
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(
-        "AllowAllOrigins",
-        builder =>
-        {
-            builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
-        }
-    );
+  options.AddPolicy(
+      "AllowAllOrigins",
+      builder =>
+      {
+        builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+      }
+  );
 });
 
 builder.Services.Configure<FormOptions>(options =>
 {
-    options.MultipartBodyLengthLimit = 100000000; // 100MB
+  options.MultipartBodyLengthLimit = 100000000; // 100MB
 });
 
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.Limits.MaxRequestBodySize = 100000000; // 100MB
+  options.Limits.MaxRequestBodySize = 100000000; // 100MB
 });
 
 builder.Services.Configure<OzonOptions>(builder.Configuration.GetSection("Ozon"));
@@ -175,9 +180,9 @@ builder.Services.AddTransient<RetryHandler>();
 builder
     .Services.AddHttpClient<IOzonApiService, OzonApiService>(client =>
     {
-        client.DefaultRequestHeaders.Accept.Add(
-            new MediaTypeWithQualityHeaderValue("application/json")
-        );
+      client.DefaultRequestHeaders.Accept.Add(
+          new MediaTypeWithQualityHeaderValue("application/json")
+      );
     })
     .AddHttpMessageHandler<RetryHandler>();
 builder.Services.AddSingleton<OpenAIService>();
@@ -206,9 +211,9 @@ app.UseDeveloperExceptionPage();
 app.UseSwagger();
 app.UseSwaggerUI(ui =>
 {
-    ui.RoutePrefix = string.Empty;
-    ui.SwaggerEndpoint("/swagger/v1/swagger.json", "Altron OpenAPI");
-    ui.SwaggerEndpoint("/swagger/LLMOpenAPI/swagger.json", "LLM OpenAPI");
+  ui.RoutePrefix = string.Empty;
+  ui.SwaggerEndpoint("/swagger/v1/swagger.json", "Altron OpenAPI");
+  ui.SwaggerEndpoint("/swagger/LLMOpenAPI/swagger.json", "LLM OpenAPI");
 });
 
 // }
@@ -259,6 +264,12 @@ app.MapControllerRoute(
     name: "app",
     pattern: "{controller}/{action}/{id?}",
     defaults: new { controller = "AppApi" }
+);
+
+app.MapControllerRoute(
+    name: "llm",
+    pattern: "{controller}/{action}/{id?}",
+    defaults: new { controller = "LLMOpenAPI" }
 );
 
 app.MapRazorPages();

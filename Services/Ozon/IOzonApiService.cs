@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+
 using ai_it_wiki.Models.Ozon;
 
 namespace ai_it_wiki.Services.Ozon
@@ -13,7 +14,10 @@ namespace ai_it_wiki.Services.Ozon
     Task WaitForImportAsync(string taskId, CancellationToken cancellationToken = default);
 
     // Add the missing method definition to resolve CS1061  
-    Task<ProductInfoListResponse> GetProductInfoListAsync(ProductInfoListRequest request, CancellationToken cancellationToken = default);
+    Task<ProductInfoListResponse> GetProductInfoListAsync(ProductInfoListRequest productInfoListRequest, CancellationToken cancellationToken = default);
     Task<RatingBySkuResponse> GetRatingBySkusAsync(IEnumerable<long> skus, CancellationToken cancellationToken);
+    Task<List<ProductListItem>> GetProductsAsync(ProductListRequest request, CancellationToken cancellationToken = default);
+
+    //TODO[critical]: исправить методы получения информации о продуктах и самого списка продуктов
   }
 }
