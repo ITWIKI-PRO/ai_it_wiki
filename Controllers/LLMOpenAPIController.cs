@@ -222,8 +222,9 @@ namespace ai_it_wiki.Controllers
         )]
         [SwaggerResponse(200, "Успешно сгенерирован текст", typeof(string))]
         [SwaggerResponse(400, "Недопустимая длина (меньше 1 или больше 100 000 000)")]
-        public IActionResult LengthCheck([FromBody, SwaggerParameter("Количество символов в ответе", Required = true)] int length)
+    public IActionResult LengthCheck([FromBody] Models.LLM.LengthRequestDto request)
         {
+            var length = request?.Length ?? 0;
             const int MaxLength = 100_000_000;
 
             if (length < 1 || length > MaxLength)

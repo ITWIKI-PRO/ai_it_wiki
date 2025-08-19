@@ -244,12 +244,10 @@
         "description": "Метод возвращает текст, состоящий из случайных русских символов, длиной, указанной в теле запроса.",
         "operationId": "LengthCheck",
         "requestBody": {
-          "description": "Длина строки в символах (максимум 100 000 000).",
           "content": {
             "application/json": {
               "schema": {
-                "type": "integer",
-                "format": "int32"
+                "$ref": "#/components/schemas/LengthRequestDto"
               }
             }
           }
@@ -352,6 +350,18 @@
         },
         "additionalProperties": false,
         "description": "DTO: Стандартный формат ошибки API"
+      },
+      "LengthRequestDto": {
+        "type": "object",
+        "properties": {
+          "length": {
+            "type": "integer",
+            "description": "Length of the string to generate",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request body for length-check endpoint"
       },
       "ProductCommission": {
         "type": "object",
