@@ -11,6 +11,37 @@
     }
   ],
   "paths": {
+    "/llm/schema": {
+      "get": {
+        "summary": "Получить схему/метаданные API и моделей, чтобы LLM знала доступные поля и порядок вызовов.",
+        "description": "Возвращает список эндпоинтов, параметры, а также известные поля моделей (и набор полей, допустимых в параметре fields).",
+        "operationId": "GetSchema",
+        "parameters": [
+          {
+            "name": "part",
+            "in": "query",
+            "description": "Номер части ответа (начиная с 1). Если ответ превышает лимит токенов, контент будет возвращён по частям.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChunkedResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/llm/products": {
       "get": {
         "summary": "Получить список товаров (объекты Ozon API)",
@@ -62,7 +93,7 @@
           {
             "name": "limit",
             "in": "query",
-            "description": "Пагинация: limit (по умолчанию 50)",
+            "description": "Пагинация: limit (по умолчанию 1000)",
             "schema": {
               "type": "integer",
               "format": "int32"

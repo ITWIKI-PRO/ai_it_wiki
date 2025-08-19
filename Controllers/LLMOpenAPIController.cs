@@ -50,6 +50,224 @@ namespace ai_it_wiki.Controllers
         }
 
         /// <summary>
+        /// Получить схему/метаданные API и моделей, чтобы LLM знала доступные поля и порядок вызовов.
+        /// </summary>
+        /// <param name="part">Номер части ответа (начиная с 1). Если ответ превышает лимит токенов, контент будет возвращён по частям.</param>
+        [HttpGet("schema")]
+        [SwaggerOperation(
+            Summary = "Схема API для LLM",
+            Description = "Возвращает список эндпоинтов, параметры, а также известные поля моделей (и набор полей, допустимых в параметре fields)."
+        )]
+        [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(ChunkedResponseDto))]
+        public IActionResult GetSchema([FromQuery] int part = 1)
+        {
+            var schema = new ai_it_wiki.Models.LLM.SchemaMetadataDto
+            {
+                Endpoints = new List<ai_it_wiki.Models.LLM.ApiEndpointInfo>
+                {
+                    new()
+                    {
+                        Path = "/llm/products",
+                        Method = "GET",
+                        Summary = "Получить список товаров (объекты Ozon API)",
+                        Description = "Фильтры по offerIds/productIds/skus, опциональные fields, пагинация через lastId/limit.",
+                        Parameters = new()
+                        {
+                            new ai_it_wiki.Models.LLM.ApiParameterInfo
+                            {
+                                Name = "offerIds",
+                                In = "query",
+                                Type = "array[string]",
+                                Required = false,
+                                Description = "Фильтр по offer_id",
+                            },
+                            new ai_it_wiki.Models.LLM.ApiParameterInfo
+                            {
+                                Name = "productIds",
+                                In = "query",
+                                Type = "array[int64]",
+                                Required = false,
+                                Description = "Фильтр по product_id",
+                            },
+                            new ai_it_wiki.Models.LLM.ApiParameterInfo
+                            {
+                                Name = "skus",
+                                In = "query",
+                                Type = "array[string]",
+                                Required = false,
+                                Description = "Фильтр по sku",
+                            },
+                            new ai_it_wiki.Models.LLM.ApiParameterInfo
+                            {
+                                Name = "lastId",
+                                In = "query",
+                                Type = "string",
+                                Required = false,
+                            },
+                            new ai_it_wiki.Models.LLM.ApiParameterInfo
+                            {
+                                Name = "limit",
+                                In = "query",
+                                Type = "int",
+                                Required = false,
+                                Default = 50,
+                            },
+                            new ai_it_wiki.Models.LLM.ApiParameterInfo
+                            {
+                                Name = "fields",
+                                In = "query",
+                                Type = "array[string]",
+                                Required = false,
+                                Description = "Список полей результата",
+                            },
+                            new ai_it_wiki.Models.LLM.ApiParameterInfo
+                            {
+                                Name = "part",
+                                In = "query",
+                                Type = "int",
+                                Required = false,
+                                Default = 1,
+                                Description = "Часть ответа",
+                            },
+                        },
+                    },
+                    new()
+                    {
+                        Path = "/llm/products/info",
+                        Method = "POST",
+                        Summary = "Получить список товаров с подробной информацией",
+                        Description = "Принимает ProductInfoListRequest (product_id[]) и возвращает объекты Ozon API.",
+                        Parameters = new()
+                        {
+                            new ai_it_wiki.Models.LLM.ApiParameterInfo
+                            {
+                                Name = "fields",
+                                In = "query",
+                                Type = "array[string]",
+                                Required = false,
+                            },
+                            new ai_it_wiki.Models.LLM.ApiParameterInfo
+                            {
+                                Name = "part",
+                                In = "query",
+                                Type = "int",
+                                Required = false,
+                                Default = 1,
+                            },
+                        },
+                    },
+                    new()
+                    {
+                        Path = "/llm/product/description",
+                        Method = "POST",
+                        Summary = "Получить описание товара",
+                        Description = "Принимает { sku }, поддерживает fields и part.",
+                        Parameters = new()
+                        {
+                            new ai_it_wiki.Models.LLM.ApiParameterInfo
+                            {
+                                Name = "fields",
+                                In = "query",
+                                Type = "array[string]",
+                                Required = false,
+                            },
+                            new ai_it_wiki.Models.LLM.ApiParameterInfo
+                            {
+                                Name = "part",
+                                In = "query",
+                                Type = "int",
+                                Required = false,
+                                Default = 1,
+                            },
+                        },
+                    },
+                    new()
+                    {
+                        Path = "/llm/ratings",
+                        Method = "POST",
+                        Summary = "Рейтинг по нескольким SKU",
+                        Description = "Возвращает детальный рейтинг для нескольких SKU. Поддерживает выбор полей.",
+                        Parameters = new()
+                        {
+                            new ai_it_wiki.Models.LLM.ApiParameterInfo
+                            {
+                                Name = "fields",
+                                In = "query",
+                                Type = "array[string]",
+                                Required = false,
+                            },
+                            new ai_it_wiki.Models.LLM.ApiParameterInfo
+                            {
+                                Name = "part",
+                                In = "query",
+                                Type = "int",
+                                Required = false,
+                                Default = 1,
+                            },
+                        },
+                    }
+                },
+                Models = new List<ai_it_wiki.Models.LLM.ModelInfo>
+                {
+                    new()
+                    {
+                        Name = nameof(ProductInfoListResponse),
+                        SelectableFields = AllowedProductItemFields.ToList(),
+                        Fields = typeof(ProductItem)
+                            .GetProperties()
+                            .Select(p => new ai_it_wiki.Models.LLM.ModelFieldInfo
+                            {
+                                Name = p.Name,
+                                Type = p.PropertyType.Name,
+                                Nullable = Nullable.GetUnderlyingType(p.PropertyType) != null || !p.PropertyType.IsValueType
+                            }).ToList(),
+
+                    },
+                    new()
+                    {
+                        Name = nameof(ProductDescriptionResponseDto),
+                        SelectableFields = AllowedProductDescriptionFields.ToList(),
+                        Fields = typeof(ProductDescriptionResponseDto)
+                            .GetProperties()
+                            .Select(p => new ai_it_wiki.Models.LLM.ModelFieldInfo
+                            {
+                                Name = p.Name,
+                                Type = p.PropertyType.Name,
+                                Nullable = Nullable.GetUnderlyingType(p.PropertyType) != null || !p.PropertyType.IsValueType
+                            }).ToList(),
+
+                    },
+                    new()
+                    {
+                        Name = nameof(RatingResponse),
+                        SelectableFields = AllowedRatingFields.ToList(),
+                        Fields = typeof(ProductRating)
+                            .GetProperties()
+                            .Select(p => new ai_it_wiki.Models.LLM.ModelFieldInfo
+                            {
+                                Name = p.Name,
+                                Type = p.PropertyType.Name,
+                                Nullable = Nullable.GetUnderlyingType(p.PropertyType) != null || !p.PropertyType.IsValueType
+                            }).ToList(),
+
+                    }
+                },
+            };
+
+            var json = JsonSerializer.Serialize(
+                schema,
+                new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                    WriteIndented = false,
+                }
+            );
+
+            return SplitedResponse(json, part);
+        }
+
+        /// <summary>
         /// Получить список товаров (объекты Ozon API)
         /// </summary>
         /// <param name="offerIds">Фильтр по offer_id (необязательно)</param>
