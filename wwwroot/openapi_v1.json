@@ -1,0 +1,1322 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Altron OpenAPI",
+    "description": "Документация коннектора для LLM",
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/MailTo": {
+      "post": {
+        "summary": "Отправляет электронное письмо указанному получателю.",
+        "operationId": "MailTo",
+        "requestBody": {
+          "description": "Объект, содержащий адрес получателя, тему и тело письма.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MailToObject"
+              },
+              "example": {"To":"pycek@list.ru","Title":"Тест апи Альтрона","Body":"Тестовое сообщение через опенапи"}
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MailToObject"
+              },
+              "example": {"To":"pycek@list.ru","Title":"Тест апи Альтрона","Body":"Тестовое сообщение через опенапи"}
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/MailToObject"
+              },
+              "example": {"To":"pycek@list.ru","Title":"Тест апи Альтрона","Body":"Тестовое сообщение через опенапи"}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Письмо успешно отправлено.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessResponse"
+                },
+                "example": {"IsSuccess":false,"Message":"Файл успешно изменен","NextRecommendedLLMActions":"ReadFile"}
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessResponse"
+                },
+                "example": {"IsSuccess":false,"Message":"Файл успешно изменен","NextRecommendedLLMActions":"ReadFile"}
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessResponse"
+                },
+                "example": {"IsSuccess":false,"Message":"Файл успешно изменен","NextRecommendedLLMActions":"ReadFile"}
+              }
+            }
+          },
+          "400": {
+            "description": "Один или несколько обязательных параметров были пустыми.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Ошибка при отправке письма.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/SendOpenAiResponseToTelegram": {
+      "post": {
+        "summary": "Отправляет сообщение в Telegram пользователю с указанным идентификатором.",
+        "operationId": "SendOpenAiResponseToTelegram",
+        "requestBody": {
+          "description": "Запрос, содержащий текст сообщения, идентификатор пользователя Telegram и режим форматирования текста.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TelegramMessageRequest"
+              },
+              "example": {"Message":"Hello, this is a test message!","TelegramUserId":123456789,"ParseMode":"html"}
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TelegramMessageRequest"
+              },
+              "example": {"Message":"Hello, this is a test message!","TelegramUserId":123456789,"ParseMode":"html"}
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TelegramMessageRequest"
+              },
+              "example": {"Message":"Hello, this is a test message!","TelegramUserId":123456789,"ParseMode":"html"}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Сообщение успешно отправлено.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessResponse"
+                },
+                "example": {"IsSuccess":false,"Message":"Файл успешно изменен","NextRecommendedLLMActions":"ReadFile"}
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessResponse"
+                },
+                "example": {"IsSuccess":false,"Message":"Файл успешно изменен","NextRecommendedLLMActions":"ReadFile"}
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessResponse"
+                },
+                "example": {"IsSuccess":false,"Message":"Файл успешно изменен","NextRecommendedLLMActions":"ReadFile"}
+              }
+            }
+          },
+          "400": {
+            "description": "Отсутствуют обязательные параметры: текст сообщения или идентификатор пользователя.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Ошибка при отправке сообщения в Telegram.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ListFiles": {
+      "get": {
+        "operationId": "ListFiles",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/ReadFile": {
+      "get": {
+        "operationId": "ReadFile",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "part",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "partSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1048576
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/WriteFile": {
+      "post": {
+        "operationId": "WriteFile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileWriteRequest"
+              },
+              "example": {"Name":"blue_square_50x50.png","Content":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAATUlEQVR4nO3OMQHAIBAAsQf/nlsDLJlguCjImvnmPft24KyWqCVqiVqilqglaolaopaoJWqJWqKWqCVqiVqilqglaolaopaoJWqJWuIHP6wBY/cJXlsAAAAASUVORK5CYII=","ReplaceText":null,"InsertAfter":null,"ContentType":"text/plain"}
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileWriteRequest"
+              },
+              "example": {"Name":"blue_square_50x50.png","Content":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAATUlEQVR4nO3OMQHAIBAAsQf/nlsDLJlguCjImvnmPft24KyWqCVqiVqilqglaolaopaoJWqJWqKWqCVqiVqilqglaolaopaoJWqJWuIHP6wBY/cJXlsAAAAASUVORK5CYII=","ReplaceText":null,"InsertAfter":null,"ContentType":"text/plain"}
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileWriteRequest"
+              },
+              "example": {"Name":"blue_square_50x50.png","Content":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAATUlEQVR4nO3OMQHAIBAAsQf/nlsDLJlguCjImvnmPft24KyWqCVqiVqilqglaolaopaoJWqJWqKWqCVqiVqilqglaolaopaoJWqJWuIHP6wBY/cJXlsAAAAASUVORK5CYII=","ReplaceText":null,"InsertAfter":null,"ContentType":"text/plain"}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/WriteImage": {
+      "post": {
+        "summary": "Сохраняет изображение, переданное в виде Base64-строки, на сервере.",
+        "operationId": "WriteImage",
+        "requestBody": {
+          "description": "Запрос, содержащий имя файла и содержимое в формате Base64.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileWriteRequest"
+              },
+              "example": {"Name":"blue_square_50x50.png","Content":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAATUlEQVR4nO3OMQHAIBAAsQf/nlsDLJlguCjImvnmPft24KyWqCVqiVqilqglaolaopaoJWqJWqKWqCVqiVqilqglaolaopaoJWqJWuIHP6wBY/cJXlsAAAAASUVORK5CYII=","ReplaceText":null,"InsertAfter":null,"ContentType":"text/plain"}
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileWriteRequest"
+              },
+              "example": {"Name":"blue_square_50x50.png","Content":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAATUlEQVR4nO3OMQHAIBAAsQf/nlsDLJlguCjImvnmPft24KyWqCVqiVqilqglaolaopaoJWqJWqKWqCVqiVqilqglaolaopaoJWqJWuIHP6wBY/cJXlsAAAAASUVORK5CYII=","ReplaceText":null,"InsertAfter":null,"ContentType":"text/plain"}
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileWriteRequest"
+              },
+              "example": {"Name":"blue_square_50x50.png","Content":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAATUlEQVR4nO3OMQHAIBAAsQf/nlsDLJlguCjImvnmPft24KyWqCVqiVqilqglaolaopaoJWqJWqKWqCVqiVqilqglaolaopaoJWqJWuIHP6wBY/cJXlsAAAAASUVORK5CYII=","ReplaceText":null,"InsertAfter":null,"ContentType":"text/plain"}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Файл успешно сохранён.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessResponse"
+                },
+                "example": {"IsSuccess":false,"Message":"Файл успешно изменен","NextRecommendedLLMActions":"ReadFile"}
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessResponse"
+                },
+                "example": {"IsSuccess":false,"Message":"Файл успешно изменен","NextRecommendedLLMActions":"ReadFile"}
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessResponse"
+                },
+                "example": {"IsSuccess":false,"Message":"Файл успешно изменен","NextRecommendedLLMActions":"ReadFile"}
+              }
+            }
+          },
+          "400": {
+            "description": "Имя файла не задано.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Ошибка при сохранении файла.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/DeleteFiles": {
+      "get": {
+        "summary": "Удаляет указанные файлы из директории `wwwroot/altron`.",
+        "operationId": "DeleteFiles",
+        "parameters": [
+          {
+            "name": "Names",
+            "in": "query",
+            "description": "Имена файлов для удаления.",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ. Возвращает список результатов удаления.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "400": {
+            "description": "Не переданы имена файлов для удаления.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/RenameFile": {
+      "get": {
+        "summary": "Переименовывает файл в директории `wwwroot/altron`.",
+        "operationId": "RenameFile",
+        "parameters": [
+          {
+            "name": "Name",
+            "in": "query",
+            "description": "Текущее имя файла.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "NewName",
+            "in": "query",
+            "description": "Новое имя файла.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Файл успешно переименован.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "400": {
+            "description": "Исходное и новое имя файла обязательны.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "404": {
+            "description": "Исходный файл не найден.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Ошибка при переименовании файла.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/CopyFile": {
+      "get": {
+        "summary": "Копирует файл в директории `wwwroot/altron`.",
+        "operationId": "CopyFile",
+        "parameters": [
+          {
+            "name": "Name",
+            "in": "query",
+            "description": "Текущее имя файла.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "NewName",
+            "in": "query",
+            "description": "Новое имя файла.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Файл успешно скопирован.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "400": {
+            "description": "Исходное и новое имя файла обязательны.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "404": {
+            "description": "Исходный файл не найден.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Ошибка при копировании файла.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/GetFilesUrl": {
+      "get": {
+        "summary": "Формирует публичные URL-адреса для уже загруженных или записанных файлов.",
+        "operationId": "GetFilesUrl",
+        "parameters": [
+          {
+            "name": "Names",
+            "in": "query",
+            "description": "Имена файлов, для которых нужно получить URL.",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ. Возвращает ai_it_wiki.Models.Altron.Files.GetFilesUrlResponse.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetFilesUrlResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetFilesUrlResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetFilesUrlResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Не переданы имена файлов.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/GetFileInfo": {
+      "get": {
+        "summary": "Возвращает метаданные файла: имя, размер, время создания и изменения.",
+        "operationId": "GetFileInfo",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Имя файла в папке `wwwroot/altron`.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ. Возвращает ai_it_wiki.Models.Altron.Files.GetFileInfoResponse.FileInfoDto.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetFileInfoResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetFileInfoResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetFileInfoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Не указано имя файла.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Файл не найден.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ExecuteShortSqlQuery": {
+      "get": {
+        "summary": "Приоритетный метод выполнения произвольных SQL-запросов через GET-запрос (ограничение — короткий запрос).",
+        "operationId": "ExecuteShortSqlQuery",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Текст SQL-запроса, передаваемый в строке запроса.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "connectionString",
+            "in": "query",
+            "description": "Строка подключения к БД. Необязательно — если не указана, используется `DefaultAltronConnection`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ. Тело: ai_it_wiki.Models.Altron.SqlQueryResponse с полем `Data`.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SqlQueryResponse"
+                },
+                "example": {"Data":"[{\"Id\":1,\"Name\":\"John Doe\",\"Age\":40},{\"Id\":2,\"Name\":\"Jane Smith\",\"Age\":44},{\"Id\":3,\"Name\":\"Alice Johnson\",\"Age\":4}]"}
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SqlQueryResponse"
+                },
+                "example": {"Data":"[{\"Id\":1,\"Name\":\"John Doe\",\"Age\":40},{\"Id\":2,\"Name\":\"Jane Smith\",\"Age\":44},{\"Id\":3,\"Name\":\"Alice Johnson\",\"Age\":4}]"}
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SqlQueryResponse"
+                },
+                "example": {"Data":"[{\"Id\":1,\"Name\":\"John Doe\",\"Age\":40},{\"Id\":2,\"Name\":\"Jane Smith\",\"Age\":44},{\"Id\":3,\"Name\":\"Alice Johnson\",\"Age\":4}]"}
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка: отсутствует или слишком длинный SQL-запрос.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервера. Тело: ai_it_wiki.Models.Altron.ErrorResponse.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ExecuteSqlQuery": {
+      "post": {
+        "summary": "Выполняет произвольный SQL-запрос к базе данных и возвращает табличный результат.",
+        "operationId": "ExecuteSqlQuery",
+        "requestBody": {
+          "description": "Запрос, содержащий:\r\n<list type=\"bullet\"><item><description>ai_it_wiki.Models.Altron.SqlQueryRequest.Query — текст SQL-запроса.</description></item><item><description>ai_it_wiki.Models.Altron.SqlQueryRequest.ConnectionString — строка подключения. Если не указана, берётся из настройки `DefaultAltronConnection`.</description></item></list>",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SqlQueryRequest"
+              },
+              "example": {"Query":"SHOW TABLES","ConnectionString":"Server=92.51.39.249;database=ai_it_wiki;uid=altron;password=333Pycek9393!;ConvertZeroDateTime=True;"}
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SqlQueryRequest"
+              },
+              "example": {"Query":"SHOW TABLES","ConnectionString":"Server=92.51.39.249;database=ai_it_wiki;uid=altron;password=333Pycek9393!;ConvertZeroDateTime=True;"}
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SqlQueryRequest"
+              },
+              "example": {"Query":"SHOW TABLES","ConnectionString":"Server=92.51.39.249;database=ai_it_wiki;uid=altron;password=333Pycek9393!;ConvertZeroDateTime=True;"}
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Успешный ответ. Тело: ai_it_wiki.Models.Altron.SqlQueryResponse с полем `Data`.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SqlQueryResponse"
+                },
+                "example": {"Data":"[{\"Id\":1,\"Name\":\"John Doe\",\"Age\":40},{\"Id\":2,\"Name\":\"Jane Smith\",\"Age\":44},{\"Id\":3,\"Name\":\"Alice Johnson\",\"Age\":4}]"}
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SqlQueryResponse"
+                },
+                "example": {"Data":"[{\"Id\":1,\"Name\":\"John Doe\",\"Age\":40},{\"Id\":2,\"Name\":\"Jane Smith\",\"Age\":44},{\"Id\":3,\"Name\":\"Alice Johnson\",\"Age\":4}]"}
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SqlQueryResponse"
+                },
+                "example": {"Data":"[{\"Id\":1,\"Name\":\"John Doe\",\"Age\":40},{\"Id\":2,\"Name\":\"Jane Smith\",\"Age\":44},{\"Id\":3,\"Name\":\"Alice Johnson\",\"Age\":4}]"}
+              }
+            }
+          },
+          "400": {
+            "description": "Неверный запрос: отсутствует или пуст `Query`.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервера. Тело: ai_it_wiki.Models.Altron.ErrorResponse с текстом ошибки.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ExecuteHttpRequest": {
+      "post": {
+        "summary": "Выполняет HTTP-запрос к любому внешнему API и возвращает текст ответа (или часть его, разбитую на фрагменты).",
+        "operationId": "ExecuteHttpRequest",
+        "requestBody": {
+          "description": "Параметры HTTP-запроса:\r\n<list type=\"bullet\"><item><description>ai_it_wiki.Models.Altron.HttpRequestExecutionRequest.Url — адрес.</description></item><item><description>ai_it_wiki.Models.Altron.HttpRequestExecutionRequest.Method — HTTP-метод (`GET`, `POST` и т.д.).</description></item><item><description>ai_it_wiki.Models.Altron.HttpRequestExecutionRequest.Headers — дополнительные заголовки.</description></item><item><description>ai_it_wiki.Models.Altron.HttpRequestExecutionRequest.Body — тело запроса (для `POST`/`PUT`).</description></item><item><description>ai_it_wiki.Models.Altron.HttpRequestExecutionRequest.Part и ai_it_wiki.Models.Altron.HttpRequestExecutionRequest.PartSize — возвращать только часть ответа.</description></item></list>",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HttpRequestExecutionRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HttpRequestExecutionRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/HttpRequestExecutionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Успешный ответ от удалённого сервиса (ai_it_wiki.Models.Altron.HttpRequestExecutionResponse).",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpRequestExecutionResponse"
+                },
+                "example": {"StatusCode":200,"Content":"OK","Part":0,"TotalParts":1}
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpRequestExecutionResponse"
+                },
+                "example": {"StatusCode":200,"Content":"OK","Part":0,"TotalParts":1}
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpRequestExecutionResponse"
+                },
+                "example": {"StatusCode":200,"Content":"OK","Part":0,"TotalParts":1}
+              }
+            }
+          },
+          "400": {
+            "description": "Неверный запрос: отсутствует `Url` или некорректен `Part`.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Внутренняя ошибка при выполнении HTTP-запроса (ai_it_wiki.Models.Altron.ErrorResponse).",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "IsSuccess": {
+            "type": "boolean",
+            "description": "Признак успеха (false).",
+            "readOnly": true
+          },
+          "Message": {
+            "type": "string",
+            "description": "Текст ошибки или описание причины отказа.",
+            "nullable": true
+          },
+          "Extra": {
+            "description": "Дополнительные данные (например, общее число частей при разбивке).",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Стандартная модель ошибки API."
+      },
+      "FileInfoDto": {
+        "type": "object",
+        "properties": {
+          "Name": {
+            "type": "string",
+            "nullable": true
+          },
+          "Size": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "Created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "Modified": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "DTO с подробностями о файле."
+      },
+      "FileUrlInfo": {
+        "type": "object",
+        "properties": {
+          "File": {
+            "type": "string",
+            "nullable": true
+          },
+          "Url": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Информация об URL файла."
+      },
+      "FileWriteRequest": {
+        "required": [
+          "Name"
+        ],
+        "type": "object",
+        "properties": {
+          "Name": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Имя файла (относительный путь внутри папки altron)."
+          },
+          "Content": {
+            "type": "string",
+            "description": "Содержимое для записи.",
+            "nullable": true
+          },
+          "ReplaceText": {
+            "type": "string",
+            "description": "Текст для замены перед записью.",
+            "nullable": true
+          },
+          "InsertAfter": {
+            "type": "string",
+            "description": "Подстрока, после которой вставить новый текст.",
+            "nullable": true
+          },
+          "ContentType": {
+            "type": "string",
+            "description": "Подстрока, перед которой вставить новый текст.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Запрос на запись в файл."
+      },
+      "GenericSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "IsSuccess": {
+            "type": "boolean",
+            "description": "Признак успеха."
+          },
+          "Message": {
+            "type": "string",
+            "description": "Сообщение или ошибка",
+            "nullable": true
+          },
+          "NextRecommendedLLMActions": {
+            "type": "string",
+            "description": "Следующие рекомендуемые действия перед ответом пользователю.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Стандартный ответ об успешном действии без дополнительных данных."
+      },
+      "GetFileInfoResponse": {
+        "type": "object",
+        "properties": {
+          "File": {
+            "$ref": "#/components/schemas/FileInfoDto"
+          },
+          "IsSuccess": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Ответ на запрос информации о файле."
+      },
+      "GetFilesUrlResponse": {
+        "type": "object",
+        "properties": {
+          "Files": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FileUrlInfo"
+            },
+            "description": "Список файлов и их URL.",
+            "nullable": true
+          },
+          "IsSuccess": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Ответ с публичными URL-адресами файлов."
+      },
+      "HttpRequestExecutionRequest": {
+        "required": [
+          "Method",
+          "Url"
+        ],
+        "type": "object",
+        "properties": {
+          "Url": {
+            "minLength": 1,
+            "type": "string",
+            "description": "URL для отправки запроса.",
+            "format": "uri"
+          },
+          "Method": {
+            "minLength": 1,
+            "pattern": "GET|POST|PUT|DELETE|PATCH|OPTIONS|HEAD",
+            "type": "string",
+            "description": "HTTP-метод (`GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `OPTIONS`, `HEAD` и т.д.)."
+          },
+          "Body": {
+            "type": "string",
+            "description": "Тело запроса (для методов, поддерживающих тело: `POST`, `PUT` и т.д.).",
+            "nullable": true
+          },
+          "Headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            },
+            "description": "Дополнительные HTTP-заголовки (ключ → значение).",
+            "nullable": true
+          },
+          "Part": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer",
+            "description": "Опционально: индекс части содержимого, если нужно вернуть не весь ответ сразу, а его фрагмент.\r\nНумерация — с 0.",
+            "format": "int32",
+            "nullable": true
+          },
+          "PartSize": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Опционально: размер части в байтах (по умолчанию 1 048 576 байт = 1 MiB).",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Параметры для выполнения произвольного HTTP-запроса."
+      },
+      "HttpRequestExecutionResponse": {
+        "type": "object",
+        "properties": {
+          "StatusCode": {
+            "type": "integer",
+            "description": "Код HTTP-статуса.",
+            "format": "int32"
+          },
+          "Content": {
+            "type": "string",
+            "description": "Полный или усечённый контент ответа.",
+            "nullable": true
+          },
+          "Part": {
+            "type": "integer",
+            "description": "Индекс возвращённой части (если применимо).",
+            "format": "int32",
+            "nullable": true
+          },
+          "TotalParts": {
+            "type": "integer",
+            "description": "Общее число частей (если применимо).",
+            "format": "int32",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Универсальный ответ на HTTP-запрос."
+      },
+      "MailToObject": {
+        "type": "object",
+        "properties": {
+          "To": {
+            "type": "string",
+            "description": "Адрес получателя. Обязательное поле.",
+            "nullable": true
+          },
+          "Title": {
+            "type": "string",
+            "description": "Тема письма. Необязательное поле.",
+            "nullable": true
+          },
+          "Body": {
+            "type": "string",
+            "description": "Тело письма. Обязательное поле.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Объект для отправки почты."
+      },
+      "SqlQueryRequest": {
+        "required": [
+          "Query"
+        ],
+        "type": "object",
+        "properties": {
+          "Query": {
+            "minLength": 1,
+            "type": "string",
+            "description": "SQL-запрос, который нужно выполнить."
+          },
+          "ConnectionString": {
+            "type": "string",
+            "description": "Строка подключения к базе данных.\r\nЕсли не указана — используется `DefaultAltronConnection` из конфигурации.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Запрос на выполнение произвольного SQL-запроса."
+      },
+      "SqlQueryResponse": {
+        "type": "object",
+        "properties": {
+          "Data": {
+            "type": "string",
+            "description": "Список строк результата запроса.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Ответ на выполнение SQL-запроса."
+      },
+      "TelegramMessageRequest": {
+        "type": "object",
+        "properties": {
+          "Message": {
+            "type": "string",
+            "description": "Текст сообщения.",
+            "nullable": true
+          },
+          "TelegramUserId": {
+            "type": "integer",
+            "description": "Идентификатор пользователя Telegram.",
+            "format": "int64"
+          },
+          "ParseMode": {
+            "type": "string",
+            "description": "Режим форматирования текста. Возможные значения: \"html\", \"markdownv2\" или null.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Запрос для отправки сообщения в Telegram."
+      }
+    }
+  }
+}
