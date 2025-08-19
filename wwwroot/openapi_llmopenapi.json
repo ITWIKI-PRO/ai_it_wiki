@@ -396,6 +396,25 @@
           }
         }
       }
+    },
+    "/llm/products/short-info": {
+      "get": {
+        "summary": "Получить краткую информацию о всех товарах: SKU, имя, product_id, описание категории, рейтинг.",
+        "description": "Метод всегда возвращает полную структуру без параметров.",
+        "operationId": "GetShortInfo",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChunkedResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
