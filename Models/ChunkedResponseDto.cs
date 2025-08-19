@@ -14,10 +14,10 @@ namespace ai_it_wiki.Models
         public bool IsConsequential { get; set; }
 
         /// <summary>
-        /// Текстовая часть контента (JSON-строка или просто текст).
+    /// Содержимое части: может быть JSON-объектом (при неразбитом ответе или json-режиме) либо строкой (raw/base64).
         /// </summary>
-        [JsonPropertyName("content")]
-        public string Content { get; set; } = string.Empty;
+    [JsonPropertyName("content")]
+    public object? Content { get; set; }
 
         /// <summary>
         /// Номер части (начиная с 1).

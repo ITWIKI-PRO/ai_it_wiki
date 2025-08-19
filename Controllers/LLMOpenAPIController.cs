@@ -49,17 +49,28 @@ namespace ai_it_wiki.Controllers
             _logger = logger;
         }
 
+        private static ChunkMode ParseMode(string? mode)
+        {
+            return mode?.ToLowerInvariant() switch
+            {
+                "json" or "json-array" or "array" => ChunkMode.JsonArray,
+                "b64" or "base64" => ChunkMode.Base64,
+                _ => ChunkMode.Raw,
+            };
+        }
+
         /// <summary>
         /// Получить схему/метаданные API и моделей, чтобы LLM знала доступные поля и порядок вызовов.
         /// </summary>
         /// <param name="part">Номер части ответа (начиная с 1). Если ответ превышает лимит токенов, контент будет возвращён по частям.</param>
+        /// <param name="mode">Режим разбивки ответа на части. Поддерживает значения: 'json' (или 'json-array'), 'b64' (или 'base64'), иначе - 'raw'.</param>
         [HttpGet("schema")]
         [SwaggerOperation(
             Summary = "Схема API для LLM",
             Description = "Возвращает список эндпоинтов, параметры, а также известные поля моделей (и набор полей, допустимых в параметре fields)."
         )]
         [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(ChunkedResponseDto))]
-        public IActionResult GetSchema([FromQuery] int part = 1)
+        public IActionResult GetSchema([FromQuery] int part = 1, [FromQuery] string? mode = null)
         {
             var schema = new ai_it_wiki.Models.LLM.SchemaMetadataDto
             {
@@ -70,7 +81,8 @@ namespace ai_it_wiki.Controllers
                         Path = "/llm/products",
                         Method = "GET",
                         Summary = "Получить список товаров (объекты Ozon API)",
-                        Description = "Фильтры по offerIds/productIds/skus, опциональные fields, пагинация через lastId/limit.",
+                        Description =
+                            "Фильтры по offerIds/productIds/skus, опциональные fields, пагинация через lastId/limit.",
                         Parameters = new()
                         {
                             new ai_it_wiki.Models.LLM.ApiParameterInfo
@@ -136,7 +148,8 @@ namespace ai_it_wiki.Controllers
                         Path = "/llm/products/info",
                         Method = "POST",
                         Summary = "Получить список товаров с подробной информацией",
-                        Description = "Принимает ProductInfoListRequest (product_id[]) и возвращает объекты Ozon API.",
+                        Description =
+                            "Принимает ProductInfoListRequest (product_id[]) и возвращает объекты Ozon API.",
                         Parameters = new()
                         {
                             new ai_it_wiki.Models.LLM.ApiParameterInfo
@@ -186,7 +199,8 @@ namespace ai_it_wiki.Controllers
                         Path = "/llm/ratings",
                         Method = "POST",
                         Summary = "Рейтинг по нескольким SKU",
-                        Description = "Возвращает детальный рейтинг для нескольких SKU. Поддерживает выбор полей.",
+                        Description =
+                            "Возвращает детальный рейтинг для нескольких SKU. Поддерживает выбор полей.",
                         Parameters = new()
                         {
                             new ai_it_wiki.Models.LLM.ApiParameterInfo
@@ -205,7 +219,7 @@ namespace ai_it_wiki.Controllers
                                 Default = 1,
                             },
                         },
-                    }
+                    },
                 },
                 Models = new List<ai_it_wiki.Models.LLM.ModelInfo>
                 {
@@ -219,9 +233,11 @@ namespace ai_it_wiki.Controllers
                             {
                                 Name = p.Name,
                                 Type = p.PropertyType.Name,
-                                Nullable = Nullable.GetUnderlyingType(p.PropertyType) != null || !p.PropertyType.IsValueType
-                            }).ToList(),
-
+                                Nullable =
+                                    Nullable.GetUnderlyingType(p.PropertyType) != null
+                                    || !p.PropertyType.IsValueType,
+                            })
+                            .ToList(),
                     },
                     new()
                     {
@@ -233,9 +249,11 @@ namespace ai_it_wiki.Controllers
                             {
                                 Name = p.Name,
                                 Type = p.PropertyType.Name,
-                                Nullable = Nullable.GetUnderlyingType(p.PropertyType) != null || !p.PropertyType.IsValueType
-                            }).ToList(),
-
+                                Nullable =
+                                    Nullable.GetUnderlyingType(p.PropertyType) != null
+                                    || !p.PropertyType.IsValueType,
+                            })
+                            .ToList(),
                     },
                     new()
                     {
@@ -247,24 +265,16 @@ namespace ai_it_wiki.Controllers
                             {
                                 Name = p.Name,
                                 Type = p.PropertyType.Name,
-                                Nullable = Nullable.GetUnderlyingType(p.PropertyType) != null || !p.PropertyType.IsValueType
-                            }).ToList(),
-
-                    }
+                                Nullable =
+                                    Nullable.GetUnderlyingType(p.PropertyType) != null
+                                    || !p.PropertyType.IsValueType,
+                            })
+                            .ToList(),
+                    },
                 },
             };
 
-            var json = JsonSerializer.Serialize(
-                schema,
-                new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                    WriteIndented = false,
-                }
-            );
-
-            return SplitedResponse(json, part);
+            return SplitedResponse(schema, part, ParseMode(mode));
         }
 
         /// <summary>
@@ -276,7 +286,7 @@ namespace ai_it_wiki.Controllers
         /// <param name="lastId">Пагинация: last_id (необязательно)</param>
         /// <param name="limit">Пагинация: limit (по умолчанию 1000)</param>
         /// <param name="fields">Необязательный список полей, которые нужно включить в ответ. Если не задан — вернётся полный объект.</param>
-    /// <param name="part">Номер части ответа (начиная с 1). Если ответ превышает лимит токенов, контент будет возвращён по частям.</param>
+        /// <param name="part">Номер части ответа (начиная с 1). Если ответ превышает лимит токенов, контент будет возвращён по частям.</param>
         /// <param name="cancellationToken">Токен отмены</param>
         [HttpGet("products")]
         [SwaggerOperation(
@@ -284,8 +294,8 @@ namespace ai_it_wiki.Controllers
             Description = "Возвращает объекты списка товаров из Ozon API",
             OperationId = "LLM_Products"
         )]
-    [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(ChunkedResponseDto))]
-    [ProducesResponseType(typeof(ChunkedResponseDto), StatusCodes.Status200OK)]
+        [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(ChunkedResponseDto))]
+        [ProducesResponseType(typeof(ChunkedResponseDto), StatusCodes.Status200OK)]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Bad request", typeof(ErrorResponse))]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [SwaggerResponse(
@@ -302,7 +312,8 @@ namespace ai_it_wiki.Controllers
             [FromQuery] int? limit,
             [FromQuery] List<string>? fields,
             CancellationToken cancellationToken,
-            [FromQuery] int part = 1
+            [FromQuery] int part = 1,
+            [FromQuery] string? mode = null
         )
         {
             var filter = new ProductInfoListFilter
@@ -323,16 +334,7 @@ namespace ai_it_wiki.Controllers
             {
                 var result = await _ozonApiService.GetProductsAsync(request, cancellationToken);
                 var shaped = ShapeResponse(result, fields);
-                var json = JsonSerializer.Serialize(
-                    shaped,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                        WriteIndented = false,
-                    }
-                );
-                return SplitedResponse(json, part);
+                return SplitedResponse(shaped, part, ParseMode(mode));
             }
             catch (Exception ex)
             {
@@ -349,7 +351,7 @@ namespace ai_it_wiki.Controllers
         /// </summary>
         /// <param name="productInfoListRequest">Объект запроса, содержащий фильтры для получения списка товаров</param>
         /// <param name="fields">Необязательный список полей, которые нужно включить в ответ. Если не задан — вернётся полный объект.</param>
-    /// <param name="part">Номер части ответа (начиная с 1). Если ответ превышает лимит токенов, контент будет возвращён по частям.</param>
+        /// <param name="part">Номер части ответа (начиная с 1). Если ответ превышает лимит токенов, контент будет возвращён по частям.</param>
         /// <param name="cancellationToken">Токен отмены</param>
         [HttpPost("products/info")]
         [SwaggerOperation(
@@ -357,8 +359,8 @@ namespace ai_it_wiki.Controllers
             Description = "Принимает ProductInfoListRequest и возвращает объекты Ozon API",
             OperationId = "LLM_ProductsInfo"
         )]
-    [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(ChunkedResponseDto))]
-    [ProducesResponseType(typeof(ChunkedResponseDto), StatusCodes.Status200OK)]
+        [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(ChunkedResponseDto))]
+        [ProducesResponseType(typeof(ChunkedResponseDto), StatusCodes.Status200OK)]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Bad request", typeof(ErrorResponse))]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [SwaggerResponse(
@@ -371,7 +373,8 @@ namespace ai_it_wiki.Controllers
             [FromBody] ProductInfoListRequest productInfoListRequest,
             [FromQuery] List<string>? fields,
             CancellationToken cancellationToken,
-            [FromQuery] int part = 1
+            [FromQuery] int part = 1,
+            [FromQuery] string? mode = null
         )
         {
             if (productInfoListRequest.ProductId?.Count() == 0)
@@ -386,16 +389,7 @@ namespace ai_it_wiki.Controllers
                     cancellationToken
                 );
                 var shaped = ShapeResponse(result, fields);
-                var json = JsonSerializer.Serialize(
-                    shaped,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                        WriteIndented = false,
-                    }
-                );
-                return SplitedResponse(json, part);
+                return SplitedResponse(shaped, part, ParseMode(mode));
             }
             catch (Exception ex)
             {
@@ -412,7 +406,7 @@ namespace ai_it_wiki.Controllers
         /// </summary>
         /// <param name="request">Объект запроса, содержащий SKU товара</param>
         /// <param name="fields">Необязательный список полей, включаемых в ответ (например: sku, description). Если не задан — вернётся полный объект.</param>
-    /// <param name="part">Номер части ответа (начиная с 1). Если ответ превышает лимит токенов, контент будет возвращён по частям.</param>
+        /// <param name="part">Номер части ответа (начиная с 1). Если ответ превышает лимит токенов, контент будет возвращён по частям.</param>
         /// <param name="cancellationToken">Токен отмены операции</param>
         [HttpPost("product/description")]
         [SwaggerOperation(
@@ -428,8 +422,8 @@ namespace ai_it_wiki.Controllers
             StatusCodes.Status200OK,
             typeof(ai_it_wiki.Models.LLM.Examples.ProductDescriptionResponseExample)
         )]
-    [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(ChunkedResponseDto))]
-    [ProducesResponseType(typeof(ChunkedResponseDto), StatusCodes.Status200OK)]
+        [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(ChunkedResponseDto))]
+        [ProducesResponseType(typeof(ChunkedResponseDto), StatusCodes.Status200OK)]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Bad request", typeof(ErrorResponseDto))]
         [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status400BadRequest)]
         [SwaggerResponse(
@@ -442,7 +436,8 @@ namespace ai_it_wiki.Controllers
             [FromBody] ProductDescriptionRequestDto request,
             [FromQuery] List<string>? fields,
             CancellationToken cancellationToken,
-            [FromQuery] int part = 1
+            [FromQuery] int part = 1,
+            [FromQuery] string? mode = null
         )
         {
             if (string.IsNullOrWhiteSpace(request?.Sku))
@@ -464,16 +459,7 @@ namespace ai_it_wiki.Controllers
                 };
 
                 var shaped = ShapeResponse(result, fields);
-                var json = JsonSerializer.Serialize(
-                    shaped,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                        WriteIndented = false,
-                    }
-                );
-                return SplitedResponse(json, part);
+                return SplitedResponse(shaped, part, ParseMode(mode));
             }
             catch (Exception ex)
             {
@@ -494,19 +480,20 @@ namespace ai_it_wiki.Controllers
         /// </summary>
         /// <param name="request">Объект запроса, содержащий длину строки.</param>
         /// <param name="part">Часть ответа, если требуется разбить результат на части.</param>
-    /// <returns>JSON-обёртка, содержащая полное содержимое или часть (если превышен лимит токенов).</returns>
+        /// <returns>JSON-обёртка, содержащая полное содержимое или часть (если превышен лимит токенов).</returns>
         [HttpPost("length-check")]
-    [Produces("application/json")]
+        [Produces("application/json")]
         [Consumes("application/json")]
         [SwaggerOperation(
             Summary = "Генерация строки заданной длины",
             Description = "Метод возвращает текст, состоящий из случайных русских символов, длиной, указанной в теле запроса."
         )]
-    [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(ChunkedResponseDto))]
+        [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(ChunkedResponseDto))]
         [SwaggerResponse(400, "Недопустимая длина (меньше 1 или больше 100 000 000)")]
         public IActionResult LengthCheck(
             [FromBody] Models.LLM.LengthRequestDto request,
-            int part = 1
+            int part = 1,
+            [FromQuery] string? mode = null
         )
         {
             var length = request?.Length ?? 0;
@@ -529,7 +516,7 @@ namespace ai_it_wiki.Controllers
                 sb.Append(ch);
             }
 
-            return SplitedResponse(sb.ToString(), part);
+            return SplitedResponse(new { value = sb.ToString() }, part, ParseMode(mode));
         }
 
         /// <summary>
@@ -537,7 +524,7 @@ namespace ai_it_wiki.Controllers
         /// </summary>
         /// <param name="ratingRequest">Объект запроса, содержащий список SKU</param>
         /// <param name="fields">Необязательный список полей, включаемых в ответ (например: result.sku,result.rating). Если не задан — вернётся полный объект.</param>
-    /// <param name="part">Номер части ответа (начиная с 1). Если ответ превышает лимит токенов, контент будет возвращён по частям.</param>
+        /// <param name="part">Номер части ответа (начиная с 1). Если ответ превышает лимит токенов, контент будет возвращён по частям.</param>
         /// <param name="cancellationToken">Токен отмены операции</param>
         [HttpPost("ratings")]
         [SwaggerOperation(
@@ -550,7 +537,8 @@ namespace ai_it_wiki.Controllers
             [FromBody] RatingRequest ratingRequest,
             [FromQuery] List<string>? fields,
             CancellationToken cancellationToken,
-            [FromQuery] int part = 1
+            [FromQuery] int part = 1,
+            [FromQuery] string? mode = null
         )
         {
             if (ratingRequest == null || !ratingRequest.Skus.Any())
@@ -563,16 +551,7 @@ namespace ai_it_wiki.Controllers
                     cancellationToken
                 );
                 var shaped = ShapeResponse(result, fields);
-                var json = JsonSerializer.Serialize(
-                    shaped,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                        WriteIndented = false,
-                    }
-                );
-                return SplitedResponse(json, part);
+                return SplitedResponse(shaped, part, ParseMode(mode));
             }
             catch (Exception ex)
             {

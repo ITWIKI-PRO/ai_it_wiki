@@ -26,6 +26,14 @@
               "format": "int32",
               "default": 1
             }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "description": "Режим разбивки ответа на части. Поддерживает значения: 'json' (или 'json-array'), 'b64' (или 'base64'), иначе - 'raw'.",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -119,6 +127,13 @@
               "format": "int32",
               "default": 1
             }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -180,6 +195,13 @@
               "type": "integer",
               "format": "int32",
               "default": 1
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -253,6 +275,13 @@
               "format": "int32",
               "default": 1
             }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -316,6 +345,13 @@
               "format": "int32",
               "default": 1
             }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -371,6 +407,13 @@
               "format": "int32",
               "default": 1
             }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -408,8 +451,7 @@
             "description": "Признак, что ответ разбит на последовательные части."
           },
           "content": {
-            "type": "string",
-            "description": "Текстовая часть контента (JSON-строка или просто текст).",
+            "description": "Содержимое части: может быть JSON-объектом (при неразбитом ответе или json-режиме) либо строкой (raw/base64).",
             "nullable": true
           },
           "part": {
