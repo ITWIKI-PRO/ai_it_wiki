@@ -313,7 +313,8 @@ namespace ai_it_wiki.Controllers
         /// </summary>
         private static readonly HashSet<string> AllowedProductItemFields = new(StringComparer.OrdinalIgnoreCase)
         {
-            "product_id", "offer_id", "sku", "name", "description_category_id", "attributes", "items",
+            // Support both canonical names and synonyms used in queries
+            "id", "product_id", "offer_id", "sku", "name", "description_category_id", "attributes", "items",
         };
 
         private static readonly HashSet<string> AllowedProductDescriptionFields = new(StringComparer.OrdinalIgnoreCase)
@@ -332,40 +333,39 @@ namespace ai_it_wiki.Controllers
                 return data;
 
             var cleaned = fields.Select(f => f?.Trim()).Where(s => !string.IsNullOrWhiteSpace(s))!;
-            var fieldSet = new HashSet<string>(cleaned!, StringComparer.OrdinalIgnoreCase);
+            var requested = new HashSet<string>(cleaned!, StringComparer.OrdinalIgnoreCase);
+
+            bool Want(params string[] tokens)
+            {
+                foreach (var t in tokens)
+                {
+                    if (requested.Contains(t)) return true;
+                }
+                return false;
+            }
 
             // Простая реализация для известных типов
             switch (data)
             {
                 case RatingResponse r when r.Products != null:
-                    if (fieldSet.Contains("result"))
+                    if (requested.Contains("result"))
                         return r; // уже всё, если просят целиком
 
                     var projected = r
                         .Products.Select(item => new Dictionary<string, object?>()
                         {
                             ["sku"] =
-                                fieldSet.Contains("result.sku") || fieldSet.Contains("sku")
+                                requested.Contains("result.sku") || requested.Contains("sku")
                                     ? item.Sku
                                     : null,
                             ["rating"] =
-                                fieldSet.Contains("result.rating") || fieldSet.Contains("rating")
+                                requested.Contains("result.rating") || requested.Contains("rating")
                                     ? item.Rating
                                     : null,
                             ["groups"] =
-                                fieldSet.Contains("result.groups") || fieldSet.Contains("groups")
+                                requested.Contains("result.groups") || requested.Contains("groups")
                                     ? item.Groups
                                     : null,
-                            // ["improve_attributes"] =
-                            //     fieldSet.Contains("result.improve_attributes")
-                            //     || fieldSet.Contains("improve_attributes")
-                            //         ? item.ImproveAttributes
-                            //         : null,
-                            // ["improve_at_least"] =
-                            //     fieldSet.Contains("result.improve_at_least")
-                            //     || fieldSet.Contains("improve_at_least")
-                            //         ? item.ImproveAtLeast
-                            //         : null,
                         })
                         .Select(d =>
                             d.Where(kv => kv.Value != null)
@@ -378,21 +378,27 @@ namespace ai_it_wiki.Controllers
                 case ProductInfoListResponse p:
                     var items = p.Items ?? new List<ProductItem>();
                     // If fields explicitly include 'items' return full object
-                    if (fieldSet.Contains("items"))
+                    if (requested.Contains("items"))
                         return p;
 
-                    // whitelist to reduce mistakes
-                    fieldSet.IntersectWith(AllowedProductItemFields);
+                    // Determine which fields are requested (support nested tokens like "items.sku")
+                    bool wantId = Want("id", "items.id", "product_id", "items.product_id");
+                    bool wantOfferId = Want("offer_id", "items.offer_id");
+                    bool wantSku = Want("sku", "items.sku");
+                    bool wantName = Want("name", "items.name");
+                    bool wantDescCatId = Want("description_category_id", "items.description_category_id");
+                    bool wantAttributes = Want("attributes", "items.attributes");
+
                     var projItems = items
                         .Select(it =>
                         {
                             var dict = new Dictionary<string, object?>();
-                            if (fieldSet.Contains("product_id") || fieldSet.Contains("items.product_id")) dict["product_id"] = it.Id;
-                            if (fieldSet.Contains("offer_id") || fieldSet.Contains("items.offer_id")) dict["offer_id"] = it.OfferId;
-                            if (fieldSet.Contains("sku") || fieldSet.Contains("items.sku")) dict["sku"] = it.Sku;
-                            if (fieldSet.Contains("name") || fieldSet.Contains("items.name")) dict["name"] = it.Name;
-                            if (fieldSet.Contains("description_category_id") || fieldSet.Contains("items.description_category_id")) dict["description_category_id"] = it.DescriptionCategoryId;
-                            if (fieldSet.Contains("attributes") || fieldSet.Contains("items.attributes")) dict["attributes"] = it;
+                            if (wantId) dict["id"] = it.Id; // emit canonical name
+                            if (wantOfferId) dict["offer_id"] = it.OfferId;
+                            if (wantSku) dict["sku"] = it.Sku;
+                            if (wantName) dict["name"] = it.Name;
+                            if (wantDescCatId) dict["description_category_id"] = it.DescriptionCategoryId;
+                            if (wantAttributes) dict["attributes"] = it; // TODO: project specific attributes if needed
                             return dict;
                         })
                         .Select(d => d.Where(kv => kv.Value != null).ToDictionary(kv => kv.Key, kv => kv.Value))
@@ -401,33 +407,35 @@ namespace ai_it_wiki.Controllers
                     var root = new Dictionary<string, object?> { ["items"] = projItems };
                     return root;
                 case ProductDescriptionResponseDto pd:
-                    fieldSet.IntersectWith(AllowedProductDescriptionFields);
+                    var pdFieldSet = new HashSet<string>(requested, StringComparer.OrdinalIgnoreCase);
+                    pdFieldSet.IntersectWith(AllowedProductDescriptionFields);
                     var pdDict = new Dictionary<string, object?>();
-                    if (fieldSet.Contains("sku")) pdDict["sku"] = pd.Sku;
-                    if (fieldSet.Contains("description")) pdDict["description"] = pd.Description;
-                    if (fieldSet.Contains("offer_id")) pdDict["offer_id"] = pd.OfferId;
-                    if (fieldSet.Contains("name")) pdDict["name"] = pd.Name;
+                    if (pdFieldSet.Contains("sku")) pdDict["sku"] = pd.Sku;
+                    if (pdFieldSet.Contains("description")) pdDict["description"] = pd.Description;
+                    if (pdFieldSet.Contains("offer_id")) pdDict["offer_id"] = pd.OfferId;
+                    if (pdFieldSet.Contains("name")) pdDict["name"] = pd.Name;
                     return pdDict.Count == 0 ? pd : pdDict;
                 case IEnumerable<ProductListItem> list:
                     // for lists of lightweight items
                     var listProj = list.Select(it =>
                     {
                         var dict = new Dictionary<string, object?>();
-                        if (fieldSet.Contains("product_id")) dict["product_id"] = it.ProductId;
-                        if (fieldSet.Contains("offer_id")) dict["offer_id"] = it.OfferId;
-                        if (fieldSet.Contains("has_fbo_stocks")) dict["has_fbo_stocks"] = it.HasFboStocks;
-                        if (fieldSet.Contains("is_discounted")) dict["is_discounted"] = it.IsDiscounted;
+                        if (requested.Contains("product_id") || requested.Contains("id")) dict["product_id"] = it.ProductId;
+                        if (requested.Contains("offer_id")) dict["offer_id"] = it.OfferId;
+                        if (requested.Contains("has_fbo_stocks")) dict["has_fbo_stocks"] = it.HasFboStocks;
+                        if (requested.Contains("is_discounted")) dict["is_discounted"] = it.IsDiscounted;
                         return dict;
                     }).ToList();
                     return listProj;
                 case RatingResponse r2 when r2.Products != null:
-                    fieldSet.IntersectWith(AllowedRatingFields);
+                    var ratingFields = new HashSet<string>(requested, StringComparer.OrdinalIgnoreCase);
+                    ratingFields.IntersectWith(AllowedRatingFields);
                     var rProj = r2.Products
                         .Select(item => new Dictionary<string, object?>
                         {
-                            ["sku"] = fieldSet.Contains("result.sku") || fieldSet.Contains("sku") ? item.Sku : null,
-                            ["rating"] = fieldSet.Contains("result.rating") || fieldSet.Contains("rating") ? item.Rating : null,
-                            ["groups"] = fieldSet.Contains("result.groups") || fieldSet.Contains("groups") ? item.Groups : null,
+                            ["sku"] = ratingFields.Contains("result.sku") || ratingFields.Contains("sku") ? item.Sku : null,
+                            ["rating"] = ratingFields.Contains("result.rating") || ratingFields.Contains("rating") ? item.Rating : null,
+                            ["groups"] = ratingFields.Contains("result.groups") || ratingFields.Contains("groups") ? item.Groups : null,
                         })
                         .Select(d => d.Where(kv => kv.Value != null).ToDictionary(kv => kv.Key, kv => kv.Value))
                         .ToList();

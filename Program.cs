@@ -209,7 +209,7 @@ app.UseDeveloperExceptionPage();
 app.UseSwagger();
 app.UseSwaggerUI(ui =>
 {
-    ui.RoutePrefix = "swagger";
+    ui.RoutePrefix = string.Empty;
     ui.SwaggerEndpoint("/swagger/v1/swagger.json", "Altron OpenAPI");
     ui.SwaggerEndpoint("/swagger/LLMOpenAPI/swagger.json", "LLM OpenAPI");
 });
