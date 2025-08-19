@@ -243,6 +243,17 @@
         "summary": "Генерирует строку указанной длины, содержащую случайные русские символы.",
         "description": "Метод возвращает текст, состоящий из случайных русских символов, длиной, указанной в теле запроса.",
         "operationId": "LengthCheck",
+        "parameters": [
+          {
+            "name": "part",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
