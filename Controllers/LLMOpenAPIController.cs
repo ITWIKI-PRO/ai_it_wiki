@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ai_it_wiki.Models;
 using ai_it_wiki.Models.Ozon;
+using ai_it_wiki.Models.LLM;
 using ai_it_wiki.Services.OpenAI;
 using ai_it_wiki.Services.Ozon;
 using Microsoft.AspNetCore.Authorization;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Annotations;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace ai_it_wiki.Controllers
 {
@@ -51,6 +53,7 @@ namespace ai_it_wiki.Controllers
         /// <param name="skus">Фильтр по sku (необязательно)</param>
         /// <param name="lastId">Пагинация: last_id (необязательно)</param>
         /// <param name="limit">Пагинация: limit (по умолчанию 50)</param>
+    /// <param name="fields">Необязательный список полей, которые нужно включить в ответ. Если не задан — вернётся полный объект.</param>
         /// <param name="cancellationToken">Токен отмены</param>
         [HttpGet("products")]
         [SwaggerOperation(
@@ -58,14 +61,19 @@ namespace ai_it_wiki.Controllers
             Description = "Возвращает объекты списка товаров из Ozon API",
             OperationId = "LLM_Products"
         )]
-        [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(ProductInfoListResponse))]
-        [ProducesResponseType(typeof(ProductInfoListResponse), StatusCodes.Status200OK)]
+    [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(ProductInfoListResponse))]
+    [ProducesResponseType(typeof(ProductInfoListResponse), StatusCodes.Status200OK)]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Bad request", typeof(ErrorResponse))]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [SwaggerResponse(StatusCodes.Status500InternalServerError, "Server error", typeof(ErrorResponse))]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> ProductsAsync(
             [FromQuery] List<string>? offerIds,
             [FromQuery] List<long>? productIds,
             [FromQuery] List<string>? skus,
             [FromQuery] string? lastId,
             [FromQuery] int? limit,
+            [FromQuery] List<string>? fields,
             CancellationToken cancellationToken
         )
         {
@@ -86,7 +94,7 @@ namespace ai_it_wiki.Controllers
             try
             {
                 var result = await _ozonApiService.GetProductsAsync(request, cancellationToken);
-                return Ok(result);
+                return Ok(ShapeResponse(result, fields));
             }
             catch (Exception ex)
             {
@@ -99,19 +107,25 @@ namespace ai_it_wiki.Controllers
         }
 
         //TODO[critical]: этот метод не выполняет поиск, он возвращает список товаров с подробной информацией о них
-        /// <summary>
-        /// Получить список товаров (POST) — принимает тело запроса, совместимое с Ozon API
-        /// </summary>
+    /// <summary>
+    /// Получить список товаров (POST) — принимает тело запроса, совместимое с Ozon API
+    /// </summary>
+    /// <param name="fields">Необязательный список полей, которые нужно включить в ответ. Если не задан — вернётся полный объект.</param>
         [HttpPost("products/info")]
         [SwaggerOperation(
             Summary = "Получить список товаров с подробной информацией",
             Description = "Принимает ProductInfoListRequest и возвращает объекты Ozon API",
             OperationId = "LLM_ProductsInfo"
         )]
-        [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(ProductInfoListResponse))]
-        [ProducesResponseType(typeof(ProductInfoListResponse), StatusCodes.Status200OK)]
+    [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(ProductInfoListResponse))]
+    [ProducesResponseType(typeof(ProductInfoListResponse), StatusCodes.Status200OK)]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Bad request", typeof(ErrorResponse))]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [SwaggerResponse(StatusCodes.Status500InternalServerError, "Server error", typeof(ErrorResponse))]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> ProductsInfoAsync(
             [FromBody] ProductInfoListRequest productInfoListRequest,
+            [FromQuery] List<string>? fields,
             CancellationToken cancellationToken
         )
         {
@@ -126,7 +140,7 @@ namespace ai_it_wiki.Controllers
                     productInfoListRequest,
                     cancellationToken
                 );
-                return Ok(result);
+                return Ok(ShapeResponse(result, fields));
             }
             catch (Exception ex)
             {
@@ -138,25 +152,33 @@ namespace ai_it_wiki.Controllers
             }
         }
 
-        /// <summary>
-        /// Получить описание товара по SKU
-        /// </summary>
+    /// <summary>
+    /// Получить описание товара по SKU
+    /// </summary>
+    /// <param name="fields">Необязательный список полей, включаемых в ответ (например: sku, description). Если не задан — вернётся полный объект.</param>
         [HttpPost("product/description")]
         [SwaggerOperation(
             Summary = "Получить описание товара",
             Description = "Возвращает текстовое описание товара из Ozon API",
             OperationId = "LLM_ProductDescription"
         )]
-        [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(DescriptionItem))]
-        [ProducesResponseType(typeof(DescriptionItem), StatusCodes.Status200OK)]
+    [SwaggerRequestExample(typeof(ProductDescriptionRequestDto), typeof(ai_it_wiki.Models.LLM.Examples.ProductDescriptionRequestExample))]
+    [SwaggerResponseExample(StatusCodes.Status200OK, typeof(ai_it_wiki.Models.LLM.Examples.ProductDescriptionResponseExample))]
+    [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(ProductDescriptionResponseDto))]
+    [ProducesResponseType(typeof(ProductDescriptionResponseDto), StatusCodes.Status200OK)]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Bad request", typeof(ErrorResponseDto))]
+    [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status400BadRequest)]
+    [SwaggerResponse(StatusCodes.Status500InternalServerError, "Server error", typeof(ErrorResponseDto))]
+    [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> ProductDescriptionAsync(
-            [FromBody] ProductDescriptionRequest request,
+            [FromBody] ProductDescriptionRequestDto request,
+            [FromQuery] List<string>? fields,
             CancellationToken cancellationToken
         )
         {
             if (string.IsNullOrWhiteSpace(request?.Sku))
             {
-                return BadRequest("SKU обязателен");
+                return BadRequest(new ErrorResponseDto { Message = "SKU обязателен" });
             }
 
             try
@@ -165,15 +187,21 @@ namespace ai_it_wiki.Controllers
                     request.Sku,
                     cancellationToken
                 );
-                var result = new DescriptionItem { Sku = request.Sku, Description = description };
-                return Ok(result);
+
+                var result = new ProductDescriptionResponseDto
+                {
+                    Sku = request.Sku,
+                    Description = description ?? string.Empty,
+                };
+
+                return Ok(ShapeResponse(result, fields));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Ошибка при получении описания товара");
                 return StatusCode(
                     StatusCodes.Status500InternalServerError,
-                    new ErrorResponse("Ошибка при получении описания товара", ex.Message)
+                    new ErrorResponseDto { Message = "Ошибка при получении описания товара", Details = ex.Message }
                 );
             }
         }
@@ -201,9 +229,10 @@ namespace ai_it_wiki.Controllers
         //     return Ok(ShapeResponse(response, fields));
         // }
 
-        /// <summary>
-        /// Получить рейтинг контента по набору SKU (детально)
-        /// </summary>
+    /// <summary>
+    /// Получить рейтинг контента по набору SKU (детально)
+    /// </summary>
+    /// <param name="fields">Необязательный список полей, включаемых в ответ (например: result.sku,result.rating). Если не задан — вернётся полный объект.</param>
         [HttpPost("ratings")]
         [SwaggerOperation(
             Summary = "Рейтинг по нескольким SKU",
@@ -213,7 +242,7 @@ namespace ai_it_wiki.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(RatingResponse))]
         public async Task<IActionResult> RatingBySkusAsync(
             [FromBody] RatingRequest ratingRequest,
-            //[FromQuery] string? fields,
+            [FromQuery] List<string>? fields,
             CancellationToken cancellationToken
         )
         {
@@ -227,7 +256,7 @@ namespace ai_it_wiki.Controllers
                     ratingRequest,
                     cancellationToken
                 );
-                return new JsonResult(result);
+                return new JsonResult(ShapeResponse(result, fields));
             }
             catch (Exception ex)
             {
@@ -243,15 +272,28 @@ namespace ai_it_wiki.Controllers
         /// Вспомогательный метод: выбор полей результата по списку fields (через запятую)
         /// Допустимо задавать вложенные поля через точку, например: "result.sku,result.rating"
         /// </summary>
-        private static object ShapeResponse(object data, string? fields)
+        private static readonly HashSet<string> AllowedProductItemFields = new(StringComparer.OrdinalIgnoreCase)
         {
-            if (string.IsNullOrWhiteSpace(fields))
+            "product_id", "offer_id", "sku", "name", "description_category_id", "attributes", "items",
+        };
+
+        private static readonly HashSet<string> AllowedProductDescriptionFields = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "sku", "description", "offer_id", "name",
+        };
+
+        private static readonly HashSet<string> AllowedRatingFields = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "result", "sku", "rating", "groups", "result.sku", "result.rating", "result.groups",
+        };
+
+        private static object ShapeResponse(object data, IEnumerable<string>? fields)
+        {
+            if (fields == null || !fields.Any())
                 return data;
 
-            var fieldSet = new HashSet<string>(
-                fields.Split(',').Select(f => f.Trim()),
-                StringComparer.OrdinalIgnoreCase
-            );
+            var cleaned = fields.Select(f => f?.Trim()).Where(s => !string.IsNullOrWhiteSpace(s))!;
+            var fieldSet = new HashSet<string>(cleaned!, StringComparer.OrdinalIgnoreCase);
 
             // Простая реализация для известных типов
             switch (data)
@@ -296,50 +338,61 @@ namespace ai_it_wiki.Controllers
 
                 case ProductInfoListResponse p:
                     var items = p.Items ?? new List<ProductItem>();
+                    // If fields explicitly include 'items' return full object
                     if (fieldSet.Contains("items"))
                         return p;
 
+                    // whitelist to reduce mistakes
+                    fieldSet.IntersectWith(AllowedProductItemFields);
                     var projItems = items
-                        .Select(it => new Dictionary<string, object?>()
+                        .Select(it =>
                         {
-                            ["offer_id"] =
-                                fieldSet.Contains("items.offer_id") || fieldSet.Contains("offer_id")
-                                    ? it.OfferId
-                                    : null,
-                            ["product_id"] =
-                                fieldSet.Contains("items.product_id")
-                                || fieldSet.Contains("product_id")
-                                    ? it.Id
-                                    : null,
-                            ["sku"] =
-                                fieldSet.Contains("items.sku") || fieldSet.Contains("sku")
-                                    ? it.Sku
-                                    : null,
-                            ["name"] =
-                                fieldSet.Contains("items.name") || fieldSet.Contains("name")
-                                    ? it.Name
-                                    : null,
-                            ["description_category_id"] =
-                                fieldSet.Contains("items.description_category_id")
-                                || fieldSet.Contains("description_category_id")
-                                    ? it.DescriptionCategoryId
-                                    : null,
-                            ["attributes"] =
-                                fieldSet.Contains("items.attributes")
-                                || fieldSet.Contains("attributes")
-                                    ? it
-                                    : null,
+                            var dict = new Dictionary<string, object?>();
+                            if (fieldSet.Contains("product_id") || fieldSet.Contains("items.product_id")) dict["product_id"] = it.Id;
+                            if (fieldSet.Contains("offer_id") || fieldSet.Contains("items.offer_id")) dict["offer_id"] = it.OfferId;
+                            if (fieldSet.Contains("sku") || fieldSet.Contains("items.sku")) dict["sku"] = it.Sku;
+                            if (fieldSet.Contains("name") || fieldSet.Contains("items.name")) dict["name"] = it.Name;
+                            if (fieldSet.Contains("description_category_id") || fieldSet.Contains("items.description_category_id")) dict["description_category_id"] = it.DescriptionCategoryId;
+                            if (fieldSet.Contains("attributes") || fieldSet.Contains("items.attributes")) dict["attributes"] = it;
+                            return dict;
                         })
-                        .Select(d =>
-                            d.Where(kv => kv.Value != null)
-                                .ToDictionary(kv => kv.Key, kv => kv.Value)
-                        )
+                        .Select(d => d.Where(kv => kv.Value != null).ToDictionary(kv => kv.Key, kv => kv.Value))
                         .ToList();
 
                     var root = new Dictionary<string, object?> { ["items"] = projItems };
-                    //if (fieldSet.Contains("total")) root["total"] = p.Total;
-                    //if (fieldSet.Contains("last_id")) root["last_id"] = p.LastId;
                     return root;
+                case ProductDescriptionResponseDto pd:
+                    fieldSet.IntersectWith(AllowedProductDescriptionFields);
+                    var pdDict = new Dictionary<string, object?>();
+                    if (fieldSet.Contains("sku")) pdDict["sku"] = pd.Sku;
+                    if (fieldSet.Contains("description")) pdDict["description"] = pd.Description;
+                    if (fieldSet.Contains("offer_id")) pdDict["offer_id"] = pd.OfferId;
+                    if (fieldSet.Contains("name")) pdDict["name"] = pd.Name;
+                    return pdDict.Count == 0 ? pd : pdDict;
+                case IEnumerable<ProductListItem> list:
+                    // for lists of lightweight items
+                    var listProj = list.Select(it =>
+                    {
+                        var dict = new Dictionary<string, object?>();
+                        if (fieldSet.Contains("product_id")) dict["product_id"] = it.ProductId;
+                        if (fieldSet.Contains("offer_id")) dict["offer_id"] = it.OfferId;
+                        if (fieldSet.Contains("has_fbo_stocks")) dict["has_fbo_stocks"] = it.HasFboStocks;
+                        if (fieldSet.Contains("is_discounted")) dict["is_discounted"] = it.IsDiscounted;
+                        return dict;
+                    }).ToList();
+                    return listProj;
+                case RatingResponse r2 when r2.Products != null:
+                    fieldSet.IntersectWith(AllowedRatingFields);
+                    var rProj = r2.Products
+                        .Select(item => new Dictionary<string, object?>
+                        {
+                            ["sku"] = fieldSet.Contains("result.sku") || fieldSet.Contains("sku") ? item.Sku : null,
+                            ["rating"] = fieldSet.Contains("result.rating") || fieldSet.Contains("rating") ? item.Rating : null,
+                            ["groups"] = fieldSet.Contains("result.groups") || fieldSet.Contains("groups") ? item.Groups : null,
+                        })
+                        .Select(d => d.Where(kv => kv.Value != null).ToDictionary(kv => kv.Key, kv => kv.Value))
+                        .ToList();
+                    return new Dictionary<string, object?> { ["result"] = rProj };
             }
 
             return data;

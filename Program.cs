@@ -144,6 +144,9 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
 
+// Export swagger docs to wwwroot on startup for external consumers (e.g., GPT tools)
+builder.Services.AddHostedService<ai_it_wiki.Internal.SwaggerExporterHostedService>();
+
 //builder.Services.AddOpen(options =>
 //{
 //  options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_1;
