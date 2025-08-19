@@ -369,3 +369,4 @@ appsettings.Development.json
 
 gdrive.json
 gsheets.json
+/appsettings.json
