@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text;
 using ai_it_wiki.Models;
 using ai_it_wiki.Models.Ozon;
 using ai_it_wiki.Services.OpenAI;
@@ -40,6 +41,7 @@ namespace ai_it_wiki.Controllers
         )
         {
             _ozonApiService = ozonApiService;
+            //TODO[moderate]: использовать openAiService или удалить параметр, если он не требуется
             _logger = logger;
         }
 
@@ -176,6 +178,42 @@ namespace ai_it_wiki.Controllers
                     new ErrorResponse("Ошибка при получении описания товара", ex.Message)
                 );
             }
+        }
+
+        /// <summary>
+        /// Генерирует строку указанной длины, содержащую случайные русские символы.
+        /// </summary>
+        /// <param name="length">Длина строки в символах (максимум 100 000 000).</param>
+        /// <returns>Строка в кодировке UTF-8 с указанным количеством символов.</returns>
+        [HttpPost("length-check")]
+        [Produces("text/plain")]
+        [Consumes("application/json")]
+        [SwaggerOperation(
+            Summary = "Генерация строки заданной длины",
+            Description = "Метод возвращает текст, состоящий из случайных русских символов, длиной, указанной в теле запроса."
+        )]
+        [SwaggerResponse(200, "Успешно сгенерирован текст", typeof(string))]
+        [SwaggerResponse(400, "Недопустимая длина (меньше 1 или больше 100 000 000)")]
+        public IActionResult LengthCheck([FromBody, SwaggerParameter("Количество символов в ответе", Required = true)] int length)
+        {
+            const int MaxLength = 100_000_000;
+
+            if (length < 1 || length > MaxLength)
+            {
+                return BadRequest($"Недопустимая длина. Разрешённый диапазон: от 1 до {MaxLength} символов.");
+            }
+
+            const string russianChars = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя ";
+            var sb = new StringBuilder(length);
+            var rand = new Random();
+
+            for (int i = 0; i < length; i++)
+            {
+                var ch = russianChars[rand.Next(russianChars.Length)];
+                sb.Append(ch);
+            }
+
+            return Content(sb.ToString(), "text/plain", Encoding.UTF8);
         }
 
         // /// <summary>
