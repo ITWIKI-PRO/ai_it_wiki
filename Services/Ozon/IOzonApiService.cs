@@ -36,6 +36,11 @@ namespace ai_it_wiki.Services.Ozon
             CancellationToken cancellationToken = default
         );
 
+        Task<ProductAttributesResponse> GetAttributesAsync(
+            ProductAttributesRequest request,
+            CancellationToken cancellationToken = default
+        );
+
         //TODO[critical]: исправить методы получения информации о продуктах и самого списка продуктов
     }
 }

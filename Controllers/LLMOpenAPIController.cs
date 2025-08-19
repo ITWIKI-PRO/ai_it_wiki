@@ -138,6 +138,46 @@ namespace ai_it_wiki.Controllers
             }
         }
 
+        /// <summary>
+        /// Получить описание товара по SKU
+        /// </summary>
+        [HttpPost("product/description")]
+        [SwaggerOperation(
+            Summary = "Получить описание товара",
+            Description = "Возвращает текстовое описание товара из Ozon API",
+            OperationId = "LLM_ProductDescription"
+        )]
+        [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(DescriptionItem))]
+        [ProducesResponseType(typeof(DescriptionItem), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ProductDescriptionAsync(
+            [FromBody] ProductDescriptionRequest request,
+            CancellationToken cancellationToken
+        )
+        {
+            if (string.IsNullOrWhiteSpace(request?.Sku))
+            {
+                return BadRequest("SKU обязателен");
+            }
+
+            try
+            {
+                var description = await _ozonApiService.GetProductDescriptionAsync(
+                    request.Sku,
+                    cancellationToken
+                );
+                var result = new DescriptionItem { Sku = request.Sku, Description = description };
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при получении описания товара");
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    new ErrorResponse("Ошибка при получении описания товара", ex.Message)
+                );
+            }
+        }
+
         // /// <summary>
         // /// Получить рейтинг контента по одному SKU (детально)
         // /// </summary>
