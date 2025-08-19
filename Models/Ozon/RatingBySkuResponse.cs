@@ -3,11 +3,11 @@ using System.Text.Json.Serialization;
 
 namespace ai_it_wiki.Models.Ozon
 {
-    public class RatingBySkuResponse
-    {
-        [JsonPropertyName("result")]
-        public IEnumerable<RatingResult> Result { get; set; }
-    }
+    // public class RatingBySkuResponse
+    // {
+    //     [JsonPropertyName("result")]
+    //     public IEnumerable<RatingResult> Result { get; set; }
+    // }
 
     public class RatingResult
     {
