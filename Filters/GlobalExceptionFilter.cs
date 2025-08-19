@@ -24,7 +24,7 @@ namespace ai_it_wiki.Filters
 
       var error = new ErrorResponse(
           context.Exception.Message,
-          details: context.Exception.StackTrace);
+          context.Exception.StackTrace);
 
       context.Result = new ObjectResult(error)
       {

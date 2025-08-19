@@ -76,15 +76,15 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc(
-        "v1",
-        new OpenApiInfo
-        {
-            Title = "Altron OpenAPI",
-            Version = "v1",
-            Description = "Документация коннектора для LLM",
-        }
-    );
+    //options.SwaggerDoc(
+    //    "v1",
+    //    new OpenApiInfo
+    //    {
+    //        Title = "Altron OpenAPI",
+    //        Version = "v1",
+    //        Description = "Документация коннектора для LLM",
+    //    }
+    //);
     // Additional Swagger doc containing only endpoints with ApiExplorerSettings(GroupName = "LLMOpenAPI")
     options.SwaggerDoc(
         "LLMOpenAPI",
