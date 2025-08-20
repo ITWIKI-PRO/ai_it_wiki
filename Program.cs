@@ -248,6 +248,12 @@ app.MapControllerRoute(
 
 app.MapControllerRoute(
     name: "api",
+    pattern: "api/{controller}/{action}/{id?}",
+    defaults: new { controller = "Api", action = "Index" }
+);
+
+app.MapControllerRoute(
+    name: "openapi",
     pattern: "{controller}/{action}/{id?}",
     defaults: new { controller = "OpenApi" }
 );
