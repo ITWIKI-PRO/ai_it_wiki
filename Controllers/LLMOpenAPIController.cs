@@ -564,6 +564,69 @@ namespace ai_it_wiki.Controllers
         }
 
         /// <summary>
+        /// Получить список товаров с рейтингом ниже или равным указанному.
+        /// </summary>
+        /// <param name="maxRating">Максимальный допустимый рейтинг</param>
+        /// <param name="cancellationToken">Токен отмены</param>
+        [HttpGet("products/low-rating")]
+        [SwaggerOperation(
+            Summary = "Товары с низким рейтингом",
+            Description = "Возвращает SKU, рейтинг и группы условий товаров с рейтингом не выше заданного"
+        )]
+        [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(IEnumerable<object>))]
+        public async Task<IActionResult> LowRatingProductsAsync(
+            [FromQuery] double maxRating,
+            CancellationToken cancellationToken
+        )
+        {
+            try
+            {
+                var products = await _ozonApiService.GetProductsAsync(
+                    new ProductListRequest { Filter = new ProductInfoListFilter(), Limit = 1000 },
+                    cancellationToken
+                );
+
+                var skus = products
+                    .Where(p => p.Sku.HasValue)
+                    .Select(p => p.Sku!.Value)
+                    .ToList();
+
+                if (!skus.Any())
+                    return Ok(new List<object>());
+
+                var ratings = await _ozonApiService.GetRatingBySkusAsync(
+                    new RatingRequest { Skus = skus },
+                    cancellationToken
+                );
+
+                var result = products
+                    .Join(
+                        ratings.Products,
+                        p => p.Sku,
+                        r => r.Sku,
+                        (p, r) => new
+                        {
+                            sku = p.Sku,
+                            rating = r.Rating,
+                            groups = r.Groups,
+                        }
+                    )
+                    .Where(x => x.rating <= maxRating)
+                    .ToList();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при получении товаров с низким рейтингом");
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    new ErrorResponse("Ошибка при получении товаров с низким рейтингом", ex.Message)
+                );
+            }
+        }
+
+        /// <summary>
         /// Вспомогательный метод: выбор полей результата по списку fields (через запятую)
         /// Допустимо задавать вложенные поля через точку, например: "result.sku,result.rating"
         /// </summary>

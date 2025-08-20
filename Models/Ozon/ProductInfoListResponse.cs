@@ -350,6 +350,9 @@ namespace ai_it_wiki.Models.Ozon
         [JsonPropertyName("offer_id")]
         public string OfferId { get; set; }
 
+        [JsonPropertyName("sku")]
+        public long? Sku { get; set; }
+
         [JsonPropertyName("has_fbo_stocks")]
         public bool HasFboStocks { get; set; }
 
