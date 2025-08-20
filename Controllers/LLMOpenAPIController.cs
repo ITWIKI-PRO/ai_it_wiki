@@ -161,6 +161,15 @@ namespace ai_it_wiki.Controllers
                             },
                             new ai_it_wiki.Models.LLM.ApiParameterInfo
                             {
+                                Name = "includeDescription",
+                                In = "query",
+                                Type = "bool",
+                                Required = false,
+                                Default = false,
+                                Description = "Включить описание товара в ответ",
+                            },
+                            new ai_it_wiki.Models.LLM.ApiParameterInfo
+                            {
                                 Name = "part",
                                 In = "query",
                                 Type = "int",
@@ -209,6 +218,15 @@ namespace ai_it_wiki.Controllers
                                 In = "query",
                                 Type = "array[string]",
                                 Required = false,
+                            },
+                            new ai_it_wiki.Models.LLM.ApiParameterInfo
+                            {
+                                Name = "includeDescription",
+                                In = "query",
+                                Type = "bool",
+                                Required = false,
+                                Default = false,
+                                Description = "Включить описание товара в ответ",
                             },
                             new ai_it_wiki.Models.LLM.ApiParameterInfo
                             {
@@ -286,8 +304,9 @@ namespace ai_it_wiki.Controllers
         /// <param name="lastId">Пагинация: last_id (необязательно)</param>
         /// <param name="limit">Пагинация: limit (по умолчанию 1000)</param>
         /// <param name="fields">Необязательный список полей, которые нужно включить в ответ. Если не задан — вернётся полный объект.</param>
-        /// <param name="part">Номер части ответа (начиная с 1). Если ответ превышает лимит токенов, контент будет возвращён по частям.</param>
         /// <param name="cancellationToken">Токен отмены</param>
+        /// <param name="includeRatings">При значении <c>true</c> дополнительно запрашивает рейтинг товаров по SKU и добавляет его в результат</param>
+        /// <param name="part">Номер части ответа (начиная с 1). Если ответ превышает лимит токенов, контент будет возвращён по частям.</param>
         [HttpGet("products")]
         [SwaggerOperation(
             Summary = "Получить список товаров",
@@ -312,6 +331,7 @@ namespace ai_it_wiki.Controllers
             [FromQuery] int? limit,
             [FromQuery] List<string>? fields,
             CancellationToken cancellationToken,
+            [FromQuery] bool includeRatings = false,
             [FromQuery] int part = 1,
             [FromQuery] string? mode = null
         )
@@ -333,6 +353,36 @@ namespace ai_it_wiki.Controllers
             try
             {
                 var result = await _ozonApiService.GetProductsAsync(request, cancellationToken);
+
+                if (includeRatings)
+                {
+                    var skuList = result
+                        .Select(r => r.Sku)
+                        .Where(s => s != 0)
+                        .Distinct()
+                        .ToList();
+
+                    if (skuList.Any())
+                    {
+                        var ratingResponse = await _ozonApiService.GetRatingBySkusAsync(
+                            new RatingRequest { Skus = skuList },
+                            cancellationToken
+                        );
+
+                        var ratingDict = ratingResponse.Products
+                            .ToDictionary(p => p.Sku);
+
+                        foreach (var item in result)
+                        {
+                            if (ratingDict.TryGetValue(item.Sku, out var rating))
+                            {
+                                item.Rating = rating.Rating;
+                                item.Groups = rating.Groups;
+                            }
+                        }
+                    }
+                }
+
                 var shaped = ShapeResponse(result, fields);
                 return SplitedResponse(shaped, part, ParseMode(mode));
             }
@@ -520,10 +570,11 @@ namespace ai_it_wiki.Controllers
         }
 
         /// <summary>
-        /// Получить рейтинг контента по набору SKU (детально)
+        /// Получить рейтинг контента по SKU с возможностью дополнительно вернуть описание товара
         /// </summary>
         /// <param name="ratingRequest">Объект запроса, содержащий список SKU</param>
-        /// <param name="fields">Необязательный список полей, включаемых в ответ (например: result.sku,result.rating). Если не задан — вернётся полный объект.</param>
+        /// <param name="fields">Необязательный список полей, включаемых в ответ (например: result.sku,result.rating).</param>
+        /// <param name="includeDescription">Если true, в ответе будет присутствовать описание товара.</param>
         /// <param name="part">Номер части ответа (начиная с 1). Если ответ превышает лимит токенов, контент будет возвращён по частям.</param>
         /// <param name="cancellationToken">Токен отмены операции</param>
         [HttpPost("ratings")]
@@ -533,10 +584,11 @@ namespace ai_it_wiki.Controllers
             OperationId = "LLM_RatingBySkus"
         )]
         [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(ChunkedResponseDto))]
-        public async Task<IActionResult> RatingBySkusAsync(
+        public async Task<IActionResult> ProductsWithRatingAsync(
             [FromBody] RatingRequest ratingRequest,
             [FromQuery] List<string>? fields,
             CancellationToken cancellationToken,
+            [FromQuery] bool includeDescription = false,
             [FromQuery] int part = 1,
             [FromQuery] string? mode = null
         )
@@ -550,6 +602,22 @@ namespace ai_it_wiki.Controllers
                     ratingRequest,
                     cancellationToken
                 );
+
+                if (includeDescription)
+                {
+                    var descriptions = await _ozonApiService.GetProductDescriptionsAsync(
+                        ratingRequest.Skus,
+                        cancellationToken
+                    );
+
+                    foreach (var product in result.Products)
+                    {
+                        if (descriptions.TryGetValue(product.Sku, out var desc))
+                        {
+                            product.Description = desc;
+                        }
+                    }
+                }
                 var shaped = ShapeResponse(result, fields);
                 return SplitedResponse(shaped, part, ParseMode(mode));
             }
@@ -559,6 +627,69 @@ namespace ai_it_wiki.Controllers
                 return StatusCode(
                     StatusCodes.Status500InternalServerError,
                     new ErrorResponse("Ошибка при получении рейтинга по SKU", ex.Message)
+                );
+            }
+        }
+
+        /// <summary>
+        /// Получить список товаров с рейтингом ниже или равным указанному.
+        /// </summary>
+        /// <param name="maxRating">Максимальный допустимый рейтинг</param>
+        /// <param name="cancellationToken">Токен отмены</param>
+        [HttpGet("products/low-rating")]
+        [SwaggerOperation(
+            Summary = "Товары с низким рейтингом",
+            Description = "Возвращает SKU, рейтинг и группы условий товаров с рейтингом не выше заданного"
+        )]
+        [SwaggerResponse(StatusCodes.Status200OK, "OK", typeof(IEnumerable<object>))]
+        public async Task<IActionResult> LowRatingProductsAsync(
+            [FromQuery] double maxRating,
+            CancellationToken cancellationToken
+        )
+        {
+            try
+            {
+                var products = await _ozonApiService.GetProductsAsync(
+                    new ProductListRequest { Filter = new ProductInfoListFilter(), Limit = 1000 },
+                    cancellationToken
+                );
+
+                var skus = products
+                    .Where(p => p.Sku.HasValue)
+                    .Select(p => p.Sku!.Value)
+                    .ToList();
+
+                if (!skus.Any())
+                    return Ok(new List<object>());
+
+                var ratings = await _ozonApiService.GetRatingBySkusAsync(
+                    new RatingRequest { Skus = skus },
+                    cancellationToken
+                );
+
+                var result = products
+                    .Join(
+                        ratings.Products,
+                        p => p.Sku,
+                        r => r.Sku,
+                        (p, r) => new
+                        {
+                            sku = p.Sku,
+                            rating = r.Rating,
+                            groups = r.Groups,
+                        }
+                    )
+                    .Where(x => x.rating <= maxRating)
+                    .ToList();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при получении товаров с низким рейтингом");
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    new ErrorResponse("Ошибка при получении товаров с низким рейтингом", ex.Message)
                 );
             }
         }
@@ -578,8 +709,11 @@ namespace ai_it_wiki.Controllers
             "sku",
             "name",
             "description_category_id",
+            "description",
             "attributes",
             "items",
+            "rating",
+            "groups",
         };
 
         private static readonly HashSet<string> AllowedProductDescriptionFields = new(
@@ -603,6 +737,8 @@ namespace ai_it_wiki.Controllers
             "result.sku",
             "result.rating",
             "result.groups",
+            "description",
+            "result.description",
         };
 
         private static object ShapeResponse(object data, IEnumerable<string>? fields)
@@ -645,6 +781,11 @@ namespace ai_it_wiki.Controllers
                                 requested.Contains("result.groups") || requested.Contains("groups")
                                     ? item.Groups
                                     : null,
+                            ["description"] =
+                                requested.Contains("result.description")
+                                || requested.Contains("description")
+                                    ? item.Description
+                                    : null,
                         })
                         .Select(d =>
                             d.Where(kv => kv.Value != null)
@@ -670,6 +811,7 @@ namespace ai_it_wiki.Controllers
                         "items.description_category_id"
                     );
                     bool wantAttributes = Want("attributes", "items.attributes");
+                    bool wantDescription = Want("description", "items.description");
 
                     var projItems = items
                         .Select(it =>
@@ -685,6 +827,8 @@ namespace ai_it_wiki.Controllers
                                 dict["name"] = it.Name;
                             if (wantDescCatId)
                                 dict["description_category_id"] = it.DescriptionCategoryId;
+                            if (wantDescription)
+                                dict["description"] = it.Description;
                             if (wantAttributes)
                                 dict["attributes"] = it; // TODO: project specific attributes if needed
                             return dict;
@@ -722,10 +866,16 @@ namespace ai_it_wiki.Controllers
                                 dict["product_id"] = it.ProductId;
                             if (requested.Contains("offer_id"))
                                 dict["offer_id"] = it.OfferId;
+                            if (requested.Contains("sku"))
+                                dict["sku"] = it.Sku;
                             if (requested.Contains("has_fbo_stocks"))
                                 dict["has_fbo_stocks"] = it.HasFboStocks;
                             if (requested.Contains("is_discounted"))
                                 dict["is_discounted"] = it.IsDiscounted;
+                            if (requested.Contains("rating"))
+                                dict["rating"] = it.Rating;
+                            if (requested.Contains("groups"))
+                                dict["groups"] = it.Groups;
                             return dict;
                         })
                         .ToList();
@@ -752,6 +902,11 @@ namespace ai_it_wiki.Controllers
                                 ratingFields.Contains("result.groups")
                                 || ratingFields.Contains("groups")
                                     ? item.Groups
+                                    : null,
+                            ["description"] =
+                                ratingFields.Contains("result.description")
+                                || ratingFields.Contains("description")
+                                    ? item.Description
                                     : null,
                         })
                         .Select(d =>

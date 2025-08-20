@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -170,6 +172,27 @@ namespace ai_it_wiki.Services.Ozon
                     ex
                 );
             }
+        }
+
+        /// <summary>
+        /// Возвращает словарь описаний товаров по их идентификаторам.
+        /// </summary>
+        /// <param name="productIds">Список идентификаторов товаров (SKU).</param>
+        /// <param name="cancellationToken">Токен отмены.</param>
+        public async Task<Dictionary<long, string?>> GetProductDescriptionsAsync(
+            IEnumerable<long> productIds,
+            CancellationToken cancellationToken = default
+        )
+        {
+            var request = new ProductInfoListRequest
+            {
+                ProductId = productIds.ToList(),
+                Fields = new List<string> { "description" },
+            };
+
+            var response = await GetProductInfoListAsync(request, cancellationToken);
+            return response.Items?.ToDictionary(i => i.Id, i => i.Description)
+                ?? new Dictionary<long, string?>();
         }
 
         public async Task<List<ProductListItem>> GetProductsAsync(
