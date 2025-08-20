@@ -367,6 +367,15 @@ namespace ai_it_wiki.Models.Ozon
 
         [JsonPropertyName("quants")]
         public List<object> Quants { get; set; }
+
+        [JsonPropertyName("sku")]
+        public long Sku { get; set; }
+
+        [JsonPropertyName("rating"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public double? Rating { get; set; }
+
+        [JsonPropertyName("groups"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public List<RatingGroup>? Groups { get; set; }
     }
 
     public class ProductInfoListRequest
