@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 namespace it_wiki_site.Controllers
 {
     [ApiController]
-    [Route("[controller]/[action]")]
+    [Route("[controller]")]
     public class ApiController : ControllerBase
     {
         private readonly ILogger<ApiController> _logger;
@@ -41,14 +41,14 @@ namespace it_wiki_site.Controllers
             return Ok(new { IsSuccess = true, Message = "API is running." });
         }
 
-        /// <summary>
-        /// Подтверждение VK Callback API и логирование входящих объектов.
-        /// </summary>
-        /// <param name="ct">Токен отмены.</param>
-        /// <param name="root">JSON-объект события VK.</param>
-        /// <returns>Результат подтверждения VK.</returns>
-        [HttpPost("api/vk/confirm")]
-        public async Task<IActionResult> VkConfirmAsync(
+    /// <summary>
+    /// Подтверждение VK Callback API и логирование входящих объектов.
+    /// </summary>
+    /// <param name="ct">Токен отмены.</param>
+    /// <param name="root">JSON-объект события VK.</param>
+    /// <returns>Результат подтверждения VK.</returns>
+    [HttpPost("vk/callback")]
+    public IActionResult Confirm(
             CancellationToken ct,
             [FromBody] System.Text.Json.JsonElement root = default
         )
@@ -79,7 +79,7 @@ namespace it_wiki_site.Controllers
             // Подтверждение сервера
             if (type == "confirmation")
             {
-                var confirmationCode = _configuration["Vk:ConfirmationCode"];
+                var confirmationCode = _configuration["Vk:Callback:ConfirmationCode"];
                 return Content(confirmationCode ?? "no_code", "text/plain");
             }
 

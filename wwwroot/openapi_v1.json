@@ -1006,6 +1006,31 @@
           }
         }
       }
+    },
+    "/Api/vk/callback": {
+      "post": {
+        "summary": "Подтверждение VK Callback API и логирование входящих объектов.",
+        "operationId": "Confirm",
+        "requestBody": {
+          "description": "JSON-объект события VK.",
+          "content": {
+            "application/json": {
+              "schema": { }
+            },
+            "text/json": {
+              "schema": { }
+            },
+            "application/*+json": {
+              "schema": { }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {

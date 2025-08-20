@@ -119,6 +119,15 @@
             }
           },
           {
+            "name": "includeRatings",
+            "in": "query",
+            "description": "При значении `true` дополнительно запрашивает рейтинг товаров по SKU и добавляет его в результат",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
             "name": "part",
             "in": "query",
             "description": "Номер части ответа (начиная с 1). Если ответ превышает лимит токенов, контент будет возвращён по частям.",
@@ -383,19 +392,28 @@
     },
     "/llm/ratings": {
       "post": {
-        "summary": "Получить рейтинг контента по набору SKU (детально)",
+        "summary": "Получить рейтинг контента по SKU с возможностью дополнительно вернуть описание товара",
         "description": "Возвращает детальный рейтинг для нескольких SKU",
         "operationId": "LLM_RatingBySkus",
         "parameters": [
           {
             "name": "fields",
             "in": "query",
-            "description": "Необязательный список полей, включаемых в ответ (например: result.sku,result.rating). Если не задан — вернётся полный объект.",
+            "description": "Необязательный список полей, включаемых в ответ (например: result.sku,result.rating).",
             "schema": {
               "type": "array",
               "items": {
                 "type": "string"
               }
+            }
+          },
+          {
+            "name": "includeDescription",
+            "in": "query",
+            "description": "Если true, в ответе будет присутствовать описание товара.",
+            "schema": {
+              "type": "boolean",
+              "default": false
             }
           },
           {
@@ -433,6 +451,37 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ChunkedResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/llm/products/low-rating": {
+      "get": {
+        "summary": "Получить список товаров с рейтингом ниже или равным указанному.",
+        "description": "Возвращает SKU, рейтинг и группы условий товаров с рейтингом не выше заданного",
+        "operationId": "LowRatingProducts",
+        "parameters": [
+          {
+            "name": "maxRating",
+            "in": "query",
+            "description": "Максимальный допустимый рейтинг",
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { }
                 }
               }
             }
@@ -534,6 +583,14 @@
               "type": "integer",
               "format": "int64"
             },
+            "nullable": true
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Набор полей, которые необходимо вернуть. Например, `description`.",
             "nullable": true
           }
         },

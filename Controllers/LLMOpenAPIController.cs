@@ -655,8 +655,7 @@ namespace ai_it_wiki.Controllers
                 );
 
                 var skus = products
-                    .Where(p => p.Sku.HasValue)
-                    .Select(p => p.Sku!.Value)
+                    .Select(p => p.Sku!)
                     .ToList();
 
                 if (!skus.Any())
