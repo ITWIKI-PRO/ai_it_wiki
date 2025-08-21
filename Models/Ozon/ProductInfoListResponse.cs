@@ -169,6 +169,12 @@ namespace ai_it_wiki.Models.Ozon
 
         [JsonPropertyName("sku")]
         public long Sku { get; set; }
+
+        /// <summary>
+        /// Описание товара, доступно при запросе поля <c>description</c>.
+        /// </summary>
+        [JsonPropertyName("description"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public string? Description { get; set; }
     }
 
     public class ProductSource
@@ -364,12 +370,27 @@ namespace ai_it_wiki.Models.Ozon
 
         [JsonPropertyName("quants")]
         public List<object> Quants { get; set; }
+
+        [JsonPropertyName("sku")]
+        public long Sku { get; set; }
+
+        [JsonPropertyName("rating"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public double? Rating { get; set; }
+
+        [JsonPropertyName("groups"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public List<RatingGroup>? Groups { get; set; }
     }
 
     public class ProductInfoListRequest
     {
         [JsonPropertyName("product_id")]
         public List<long> ProductId { get; set; } = new List<long>();
+
+        /// <summary>
+        /// Набор полей, которые необходимо вернуть. Например, <c>description</c>.
+        /// </summary>
+        [JsonPropertyName("fields"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public List<string>? Fields { get; set; }
     }
 
     public class RatingRequest
@@ -394,6 +415,12 @@ namespace ai_it_wiki.Models.Ozon
 
         [JsonPropertyName("groups")]
         public List<RatingGroup> Groups { get; set; }
+
+        /// <summary>
+        /// Описание товара, подставляется вручную при запросе расширенной информации.
+        /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public string? Description { get; set; }
     }
 
     public class RatingGroup
