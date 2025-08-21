@@ -188,9 +188,9 @@ builder.Services.AddSingleton<IOpenAiService>(sp => sp.GetRequiredService<OpenAI
 builder.Services.AddSingleton<KworkManager>();
 
 builder.Services.AddSingleton<YoutubeService>();
-builder.Services.AddScoped<TelegramBotService>(e => new TelegramBotService(
-    builder.Configuration["Api:TelegramBot"]
-));
+// builder.Services.AddScoped<TelegramBotService>(e => new TelegramBotService(
+//     builder.Configuration["Api:TelegramBot"]
+// ));
 
 var app = builder.Build();
 

@@ -11,7 +11,7 @@
     }
   ],
   "paths": {
-    "/MailTo": {
+    "/altron/MailTo": {
       "post": {
         "summary": "Отправляет электронное письмо указанному получателю.",
         "operationId": "MailTo",
@@ -105,7 +105,7 @@
         }
       }
     },
-    "/SendOpenAiResponseToTelegram": {
+    "/altron/SendOpenAiResponseToTelegram": {
       "post": {
         "summary": "Отправляет сообщение в Telegram пользователю с указанным идентификатором.",
         "operationId": "SendOpenAiResponseToTelegram",
@@ -199,7 +199,7 @@
         }
       }
     },
-    "/ListFiles": {
+    "/altron/ListFiles": {
       "get": {
         "operationId": "ListFiles",
         "responses": {
@@ -209,7 +209,7 @@
         }
       }
     },
-    "/ReadFile": {
+    "/altron/ReadFile": {
       "get": {
         "operationId": "ReadFile",
         "parameters": [
@@ -245,7 +245,7 @@
         }
       }
     },
-    "/WriteFile": {
+    "/altron/WriteFile": {
       "post": {
         "operationId": "WriteFile",
         "requestBody": {
@@ -277,7 +277,7 @@
         }
       }
     },
-    "/WriteImage": {
+    "/altron/WriteImage": {
       "post": {
         "summary": "Сохраняет изображение, переданное в виде Base64-строки, на сервере.",
         "operationId": "WriteImage",
@@ -371,7 +371,7 @@
         }
       }
     },
-    "/DeleteFiles": {
+    "/altron/DeleteFiles": {
       "get": {
         "summary": "Удаляет указанные файлы из директории `wwwroot/altron`.",
         "operationId": "DeleteFiles",
@@ -421,7 +421,7 @@
         }
       }
     },
-    "/RenameFile": {
+    "/altron/RenameFile": {
       "get": {
         "summary": "Переименовывает файл в директории `wwwroot/altron`.",
         "operationId": "RenameFile",
@@ -505,7 +505,7 @@
         }
       }
     },
-    "/CopyFile": {
+    "/altron/CopyFile": {
       "get": {
         "summary": "Копирует файл в директории `wwwroot/altron`.",
         "operationId": "CopyFile",
@@ -589,7 +589,7 @@
         }
       }
     },
-    "/GetFilesUrl": {
+    "/altron/GetFilesUrl": {
       "get": {
         "summary": "Формирует публичные URL-адреса для уже загруженных или записанных файлов.",
         "operationId": "GetFilesUrl",
@@ -651,7 +651,7 @@
         }
       }
     },
-    "/GetFileInfo": {
+    "/altron/GetFileInfo": {
       "get": {
         "summary": "Возвращает метаданные файла: имя, размер, время создания и изменения.",
         "operationId": "GetFileInfo",
@@ -730,7 +730,7 @@
         }
       }
     },
-    "/ExecuteShortSqlQuery": {
+    "/altron/ExecuteShortSqlQuery": {
       "get": {
         "summary": "Приоритетный метод выполнения произвольных SQL-запросов через GET-запрос (ограничение — короткий запрос).",
         "operationId": "ExecuteShortSqlQuery",
@@ -820,12 +820,12 @@
         }
       }
     },
-    "/ExecuteSqlQuery": {
+    "/altron/ExecuteSqlQuery": {
       "post": {
         "summary": "Выполняет произвольный SQL-запрос к базе данных и возвращает табличный результат.",
         "operationId": "ExecuteSqlQuery",
         "requestBody": {
-          "description": "Запрос, содержащий:\r\n<list type=\"bullet\"><item><description>ai_it_wiki.Models.Altron.SqlQueryRequest.Query — текст SQL-запроса.</description></item><item><description>ai_it_wiki.Models.Altron.SqlQueryRequest.ConnectionString — строка подключения. Если не указана, берётся из настройки `DefaultAltronConnection`.</description></item></list>",
+          "description": "Запрос, содержащий:\n<list type=\"bullet\"><item><description>ai_it_wiki.Models.Altron.SqlQueryRequest.Query — текст SQL-запроса.</description></item><item><description>ai_it_wiki.Models.Altron.SqlQueryRequest.ConnectionString — строка подключения. Если не указана, берётся из настройки `DefaultAltronConnection`.</description></item></list>",
           "content": {
             "application/json": {
               "schema": {
@@ -915,12 +915,12 @@
         }
       }
     },
-    "/ExecuteHttpRequest": {
+    "/altron/ExecuteHttpRequest": {
       "post": {
         "summary": "Выполняет HTTP-запрос к любому внешнему API и возвращает текст ответа (или часть его, разбитую на фрагменты).",
         "operationId": "ExecuteHttpRequest",
         "requestBody": {
-          "description": "Параметры HTTP-запроса:\r\n<list type=\"bullet\"><item><description>ai_it_wiki.Models.Altron.HttpRequestExecutionRequest.Url — адрес.</description></item><item><description>ai_it_wiki.Models.Altron.HttpRequestExecutionRequest.Method — HTTP-метод (`GET`, `POST` и т.д.).</description></item><item><description>ai_it_wiki.Models.Altron.HttpRequestExecutionRequest.Headers — дополнительные заголовки.</description></item><item><description>ai_it_wiki.Models.Altron.HttpRequestExecutionRequest.Body — тело запроса (для `POST`/`PUT`).</description></item><item><description>ai_it_wiki.Models.Altron.HttpRequestExecutionRequest.Part и ai_it_wiki.Models.Altron.HttpRequestExecutionRequest.PartSize — возвращать только часть ответа.</description></item></list>",
+          "description": "Параметры HTTP-запроса:\n<list type=\"bullet\"><item><description>ai_it_wiki.Models.Altron.HttpRequestExecutionRequest.Url — адрес.</description></item><item><description>ai_it_wiki.Models.Altron.HttpRequestExecutionRequest.Method — HTTP-метод (`GET`, `POST` и т.д.).</description></item><item><description>ai_it_wiki.Models.Altron.HttpRequestExecutionRequest.Headers — дополнительные заголовки.</description></item><item><description>ai_it_wiki.Models.Altron.HttpRequestExecutionRequest.Body — тело запроса (для `POST`/`PUT`).</description></item><item><description>ai_it_wiki.Models.Altron.HttpRequestExecutionRequest.Part и ai_it_wiki.Models.Altron.HttpRequestExecutionRequest.PartSize — возвращать только часть ответа.</description></item></list>",
           "content": {
             "application/json": {
               "schema": {
@@ -1195,7 +1195,7 @@
             "maximum": 2147483647,
             "minimum": 0,
             "type": "integer",
-            "description": "Опционально: индекс части содержимого, если нужно вернуть не весь ответ сразу, а его фрагмент.\r\nНумерация — с 0.",
+            "description": "Опционально: индекс части содержимого, если нужно вернуть не весь ответ сразу, а его фрагмент.\nНумерация — с 0.",
             "format": "int32",
             "nullable": true
           },
@@ -1276,7 +1276,7 @@
           },
           "ConnectionString": {
             "type": "string",
-            "description": "Строка подключения к базе данных.\r\nЕсли не указана — используется `DefaultAltronConnection` из конфигурации.",
+            "description": "Строка подключения к базе данных.\nЕсли не указана — используется `DefaultAltronConnection` из конфигурации.",
             "nullable": true
           }
         },

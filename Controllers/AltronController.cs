@@ -32,7 +32,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace it_wiki_site.Controllers
 {
   [ApiController]
-  [Route("[controller]/[action]")]
+  [Route("altron/[action]")]
   public class AltronController : ControllerBase
   {
     private readonly ITelegramBotClient _botClient;
@@ -44,12 +44,11 @@ namespace it_wiki_site.Controllers
     private readonly HttpClient _httpClient;
     private readonly SmtpClient _smtpClient;
 
-    public AltronController([FromServices] ApplicationDbContext applicationDbContext, [FromServices] TelegramBotService botClient,
+    public AltronController([FromServices] ApplicationDbContext applicationDbContext,
         IWebHostEnvironment env,
         ILogger<AltronController> logger,
         IConfiguration configuration)
     {
-      _botClient = botClient;
       _env = env;
       _logger = logger;
       _configuration = configuration;
