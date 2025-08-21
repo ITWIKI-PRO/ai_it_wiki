@@ -9,7 +9,6 @@ using ai_it_wiki.Models;
 using ai_it_wiki.Options;
 using ai_it_wiki.Services.OpenAI;
 using ai_it_wiki.Services.Ozon;
-using ai_it_wiki.Services.Ozon;
 using ai_it_wiki.Services.TelegramBot;
 using ai_it_wiki.Services.Youtube;
 using Kwork;
